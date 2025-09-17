@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    tools:context=".DocenteLoginActivity">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:title="Login Docente"
+        android:gravity="center"
+        android:titleTextColor="@android:color/white"
+        android:elevation="6dp" />
+
+    <!-- Contenido -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:gravity="center_horizontal">
+
+            <!-- Logos -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:weightSum="2"
+                android:layout_marginBottom="32dp">
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:src="@drawable/logo_buap"
+                    android:contentDescription="@string/desc_logo_buap"
+                    android:scaleType="fitCenter" />
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:src="@drawable/logo_lazaro"
+                    android:contentDescription="@string/desc_logo_lazaro"
+                    android:scaleType="fitCenter" />
+            </LinearLayout>
+
+            <!-- Usuario -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Usuario"
+                app:startIconDrawable="@drawable/ic_user"
+                app:boxStrokeColor="@color/colorPrimary"
+                app:boxStrokeWidth="2dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:hintTextColor="@color/colorPrimary">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etUsuario"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:inputType="text"
+                    android:textColor="@color/colorPrimaryDark"
+                    tools:text="docente" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Contraseña -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:hint="Contraseña"
+                app:startIconDrawable="@drawable/ic_password"
+                app:passwordToggleEnabled="true"
+                app:boxStrokeColor="@color/colorPrimary"
+                app:boxStrokeWidth="2dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:hintTextColor="@color/colorPrimary">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:inputType="textPassword"
+                    android:textColor="@color/colorPrimaryDark"
+                    tools:text="12345" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Botón -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="52dp"
+                android:text="Iniciar sesión"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:backgroundTint="@color/colorPrimary"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_login"
+                app:iconTint="@android:color/white"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                android:elevation="4dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

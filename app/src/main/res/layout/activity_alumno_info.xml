@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F7FA">
+
+    <!-- Toolbar con degradado -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/gradient_toolbar"
+        android:elevation="6dp"
+        app:title="Control de Actividades"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@android:color/white" />
+
+    <!-- Contenido -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Header diferente -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp"
+                android:background="@drawable/gradient_header_background"
+                android:layout_marginBottom="24dp"
+                android:elevation="4dp">
+
+                <ImageView
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:src="@android:drawable/ic_menu_info_details"
+                    android:background="@drawable/circle_white"
+                    android:padding="16dp"
+                    app:tint="#1565C0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="INFORMACIÓN DEL ALUMNO"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="12dp" />
+            </LinearLayout>
+
+            <!-- Tarjeta: Nombre -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="3dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nombre Completo"
+                        android:textColor="#1976D2"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <TextView
+                        android:id="@+id/tvNombreAlumno"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Sin información"
+                        android:textColor="#212121"
+                        android:textSize="17sp"
+                        android:padding="10dp"
+                        android:background="#EEF3F9"
+                        android:gravity="center_vertical"
+                        android:drawablePadding="8dp"
+                        app:drawableStartCompat="@android:drawable/ic_menu_myplaces" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Tarjeta: Matrícula -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="3dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Matrícula"
+                        android:textColor="#1976D2"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <TextView
+                        android:id="@+id/tvMatriculaAlumno"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Sin información"
+                        android:textColor="#212121"
+                        android:textSize="17sp"
+                        android:padding="10dp"
+                        android:background="#EEF3F9"
+                        android:gravity="center_vertical"
+                        android:drawablePadding="8dp"
+                        app:drawableStartCompat="@android:drawable/ic_menu_agenda" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Tarjeta: Grupo -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="3dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Grupo"
+                        android:textColor="#1976D2"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <TextView
+                        android:id="@+id/tvGrupoAlumno"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Sin información"
+                        android:textColor="#212121"
+                        android:textSize="17sp"
+                        android:padding="10dp"
+                        android:background="#EEF3F9"
+                        android:gravity="center_vertical"
+                        android:drawablePadding="8dp"
+                        app:drawableStartCompat="@android:drawable/ic_menu_sort_by_size" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Instrucciones -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ℹ️ Presiona el botón para escanear el código QR"
+                android:textSize="14sp"
+                android:textColor="#1565C0"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="#E3F2FD"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Botón -->
+            <Button
+                android:id="@+id/btnEscanear"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Escanear Código QR"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05"
+                android:background="@drawable/button_primary_selector"
+                android:layout_marginBottom="32dp"
+                app:drawableStartCompat="@android:drawable/ic_menu_camera"
+                app:drawableTint="@android:color/white"
+                android:drawablePadding="10dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

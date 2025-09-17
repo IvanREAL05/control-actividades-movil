@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    android:backgroundTint="#F8F9FF"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="14dp"
+        android:gravity="center_vertical">
+
+        <!-- Indicador de horario -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/bg_horario_indicator"
+            android:padding="8dp"
+            android:minWidth="60dp">
+
+            <TextView
+                android:id="@+id/txtHoraInicio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="08:00"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="1dp"
+                android:background="@color/primary"
+                android:layout_marginVertical="2dp"
+                android:alpha="0.5" />
+
+            <TextView
+                android:id="@+id/txtHoraFin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="09:40"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary" />
+
+        </LinearLayout>
+
+        <!-- Información de la clase -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Nombre de la clase y NRC -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:id="@+id/txtNombreClase"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Programación Web"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#1a1a1a"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/txtNRC"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NRC: 12345"
+                    android:textSize="10sp"
+                    android:textColor="#666"
+                    android:background="@drawable/bg_rounded_chip_small"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:layout_marginStart="8dp" />
+
+            </LinearLayout>
+
+            <!-- Materia y clave -->
+            <TextView
+                android:id="@+id/txtMateria"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ISC-101 • Ingeniería en Sistemas"
+                android:textSize="12sp"
+                android:textColor="#666"
+                android:layout_marginBottom="4dp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Grupo y Aula -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/txtGrupo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Grupo A • Matutino"
+                    android:textSize="11sp"
+                    android:textColor="#888"
+                    android:drawableStart="@drawable/ic_group_small"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical" />
+
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="4dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:background="@drawable/bg_dot_separator" />
+
+                <TextView
+                    android:id="@+id/txtAula"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Aula 201"
+                    android:textSize="11sp"
+                    android:textColor="#888"
+                    android:drawableStart="@drawable/ic_location_small"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Indicador de selección -->
+        <ImageView
+            android:id="@+id/imgIndicadorSeleccion"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_arrow_forward"
+            android:layout_marginStart="8dp"
+            app:tint="@color/primary"
+            android:alpha="0.6" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

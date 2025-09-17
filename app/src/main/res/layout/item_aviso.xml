@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_aviso_card"
+    android:padding="12dp"
+    android:layout_margin="8dp">
+
+    <TextView
+        android:id="@+id/tvTituloAviso"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/titulo_evento"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="@color/colorPrimaryDark" />
+
+    <TextView
+        android:id="@+id/tvDescripcionAviso"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/descripcion_aviso"
+        android:textSize="14sp"
+        android:textColor="@android:color/black" />
+
+    <TextView
+        android:id="@+id/tvFechaAviso"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/fecha_evento"
+        android:textSize="12sp"
+        android:textColor="#444444" />
+
+    <TextView
+        android:id="@+id/tvEnlaceAviso"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ver enlace"
+        android:textSize="14sp"
+        android:textColor="#1976D2"
+        android:paddingTop="4dp"
+        android:visibility="gone" />
+</LinearLayout>

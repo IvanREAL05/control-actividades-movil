@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/filtro_todos"
+        android:title="Todos"
+        android:icon="@android:drawable/ic_menu_view"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/filtro_presente"
+        android:title="Presentes"
+        android:icon="@android:drawable/ic_menu_view"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/filtro_ausente"
+        android:title="Ausentes"
+        android:icon="@android:drawable/ic_menu_view"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/filtro_justificante"
+        android:title="Justificantes"
+        android:icon="@android:drawable/ic_menu_view"
+        app:showAsAction="never" />
+
+</menu>

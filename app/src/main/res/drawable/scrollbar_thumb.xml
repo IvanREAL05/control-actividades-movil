@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Color del thumb del scrollbar -->
+    <solid android:color="#BDBDBD" />
+
+    <!-- Bordes redondeados -->
+    <corners android:radius="4dp" />
+
+    <!-- Tamaño -->
+    <size
+        android:width="4dp"
+        android:height="40dp" />
+
+</shape>

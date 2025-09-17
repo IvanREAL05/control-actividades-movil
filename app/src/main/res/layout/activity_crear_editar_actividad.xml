@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- Toolbar simple -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/blue_gradient_start"
+        android:title="Nueva Actividad"
+        android:gravity="center"
+        android:titleTextColor="@android:color/white"
+        android:elevation="6dp"
+        app:navigationIcon="@drawable/ic_arrow_back"/>
+
+    <!-- ScrollView con fillViewport para que ocupe todo el espacio restante -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingBottom="32dp">
+
+            <!-- Card con campos de texto -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/light_blue_transparent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Título -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Título de la actividad"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etTitulo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapSentences" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Descripción -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:hint="Descripción">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etDescripcion"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minLines="3"
+                            android:gravity="top"
+                            android:inputType="textMultiLine" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Valor máximo -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:hint="Valor máximo (0-10)">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etValorMaximo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:maxLength="2" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card con fecha y hora -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/light_yellow">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fecha de entrega"
+                        android:textColor="@color/gray"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btnSeleccionarFecha"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Seleccionar fecha" />
+
+                    <TextView
+                        android:id="@+id/tvFechaEntrega"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sin seleccionar"
+                        android:textColor="@android:color/black"
+                        android:layout_marginTop="4dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hora de entrega"
+                        android:textColor="@color/gray"
+                        android:layout_marginTop="16dp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btnSeleccionarHora"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Seleccionar hora" />
+
+                    <TextView
+                        android:id="@+id/tvHoraEntrega"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sin seleccionar"
+                        android:textColor="@android:color/black"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Botón Guardar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGuardarActividad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Guardar actividad"
+                style="@style/Widget.MaterialComponents.Button.Filled"
+                app:cornerRadius="20dp"
+                app:backgroundTint="@color/blue_gradient_mid"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

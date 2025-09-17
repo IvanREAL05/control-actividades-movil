@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/itemContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@android:color/white"
+    android:clickable="false"
+    android:focusable="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="20dp"
+        android:gravity="center_vertical">
+
+        <!-- Avatar circular con inicial -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#E3F2FD">
+
+            <TextView
+                android:id="@+id/tvInicialAlumno"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="A"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#1976D2"
+                android:gravity="center" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Contenedor de información -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Nombre del alumno -->
+            <TextView
+                android:id="@+id/tvNombreAlumno"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nombre Apellido"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#212121"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Matrícula con icono -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎓"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/tvMatriculaAlumno"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="S20140001"
+                    android:textSize="13sp"
+                    android:textColor="#666666" />
+
+            </LinearLayout>
+
+            <!-- Información adicional (opcional) -->
+            <TextView
+                android:id="@+id/tvInfoAdicional"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Última asistencia: Ayer"
+                android:textSize="11sp"
+                android:textColor="#999999"
+                android:layout_marginTop="2dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- Estado con diseño mejorado -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end">
+
+            <!-- Chip de estado principal -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEstado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#4CAF50">
+
+                <TextView
+                    android:id="@+id/tvEstadoAlumno"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Presente"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:textAllCaps="true" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Indicador de estado circular -->
+            <View
+                android:id="@+id/indicadorEstado"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/circulo_estado_presente" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Barra de progreso sutil (opcional, para animaciones) -->
+    <View
+        android:id="@+id/progressIndicator"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_gravity="bottom"
+        android:background="#E0E0E0"
+        android:visibility="gone" />
+
+</com.google.android.material.card.MaterialCardView>

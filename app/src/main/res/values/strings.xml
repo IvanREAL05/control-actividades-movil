@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Control-Actividades</string>
+    <string name="desc_logo_buap">Logo BUAP</string>
+    <string name="desc_logo_lazaro">Logo Lázaro</string>
+    <string name="escuela_nombre">UA PREP. "GRAL. LÁZARO CÁRDENAS DEL RÍO</string>
+    <string name="modo_docente">MODO DOCENTE</string>
+    <string name="avisos_oficiales">Avisos Oficiales</string>
+    <string name="modo_estudiante">QR INFO</string>
+    <string name="titulo_evento">Título del Evento</string>
+    <string name="descripcion_aviso">Descripción del aviso</string>
+    <string name="fecha_evento">Fecha del evento</string>
+    <string name="hint_usuario">Usuario</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="btn_login">Iniciar sesión</string>
+
+    <string name="qr_scanned">QR escaneado:\n%s</string>
+    <string name="no_result">No se obtuvo resultado</string>
+    <string name="server_response">Respuesta del servidor:\n%s</string>
+    <string name="error_registering">Error al registrar asistencia</string>
+    <string name="permiso_denegado">Permiso de cámara denegado</string>
+    <string name="connection_error">Error de conexión: %s</string>
+    <string name="scan_cancelled">Escaneo cancelado</string>
+
+
+</resources>

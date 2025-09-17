@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F8FAFE"
+    android:fitsSystemWindows="true">
+
+    <!-- Toolbar moderno -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/toolbar_gradient"
+        app:title="Estadísticas de Actividades"
+        app:titleTextColor="@android:color/white"
+        app:navigationIconTint="@android:color/white"
+        android:elevation="4dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Header con fecha de consulta -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#E3F2FD">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📊"
+                        android:textSize="24sp"
+                        android:layout_marginEnd="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Resumen de Actividades"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="#1976D2" />
+
+                        <TextView
+                            android:id="@+id/tvFechaConsulta"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Consultado el: Cargando..."
+                            android:textSize="12sp"
+                            android:textColor="#666666"
+                            android:layout_marginTop="2dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Totales de actividades -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📝 Totales Generales"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121"
+                        android:layout_marginBottom="16dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <!-- Total Actividades -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#F3E5F5"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/tvTotalActividades"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="32sp"
+                                android:textStyle="bold"
+                                android:textColor="#7B1FA2" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Actividades"
+                                android:textSize="12sp"
+                                android:textColor="#7B1FA2"
+                                android:textAllCaps="true"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="16dp"
+                            android:layout_height="1dp" />
+
+                        <!-- Valor Máximo -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#FFF3E0"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/tvValorMaximo"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="32sp"
+                                android:textStyle="bold"
+                                android:textColor="#F57C00" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Valor Máximo"
+                                android:textSize="12sp"
+                                android:textColor="#F57C00"
+                                android:textAllCaps="true"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Estado de entregas -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📋 Estado de Entregas"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121"
+                        android:layout_marginBottom="16dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <!-- Entregado -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="#4CAF50">
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:text="✓"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@android:color/white"
+                                    android:gravity="center" />
+
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <TextView
+                                android:id="@+id/tvEntregado"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                android:textColor="#4CAF50"
+                                android:layout_marginTop="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Entregado"
+                                android:textSize="11sp"
+                                android:textColor="#666666"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <!-- Pendiente -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="#FF9800">
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:text="⏳"
+                                    android:textSize="20sp"
+                                    android:textColor="@android:color/white"
+                                    android:gravity="center" />
+
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <TextView
+                                android:id="@+id/tvPendiente"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                android:textColor="#FF9800"
+                                android:layout_marginTop="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Pendiente"
+                                android:textSize="11sp"
+                                android:textColor="#666666"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <!-- No Entregado -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="#F44336">
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:text="✗"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@android:color/white"
+                                    android:gravity="center" />
+
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <TextView
+                                android:id="@+id/tvNoEntregado"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                android:textColor="#F44336"
+                                android:layout_marginTop="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="No Entregado"
+                                android:textSize="11sp"
+                                android:textColor="#666666"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Calificaciones -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🎯 Calificaciones"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="#212121" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:id="@+id/tvPromedioGeneral"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0.0"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:textColor="#1976D2" />
+
+                    </LinearLayout>
+
+                    <!-- Distribución de calificaciones -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <!-- 0-5 -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#FFEBEE"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:id="@+id/tvRango0_5"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:textColor="#D32F2F" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0-5"
+                                android:textSize="11sp"
+                                android:textColor="#D32F2F" />
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="8dp"
+                            android:layout_height="1dp" />
+
+                        <!-- 6-7 -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#FFF8E1"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:id="@+id/tvRango6_7"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:textColor="#F57C00" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="6-7"
+                                android:textSize="11sp"
+                                android:textColor="#F57C00" />
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="8dp"
+                            android:layout_height="1dp" />
+
+                        <!-- 8-10 -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#E8F5E8"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:id="@+id/tvRango8_10"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:textColor="#388E3C" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="8-10"
+                                android:textSize="11sp"
+                                android:textColor="#388E3C" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Rankings y mejores/peores -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🏆 Rankings de Actividades"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Más entregada -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🥇"
+                            android:textSize="20sp"
+                            android:layout_marginEnd="12dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Más Entregada"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvMasEntregada"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Cargando..."
+                                android:textSize="14sp"
+                                android:textColor="#4CAF50"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Mayor promedio -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="⭐"
+                            android:textSize="20sp"
+                            android:layout_marginEnd="12dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Mayor Promedio"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvMayorPromedio"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Cargando..."
+                                android:textSize="14sp"
+                                android:textColor="#1976D2"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Separador -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#F0F0F0"
+                        android:layout_marginVertical="12dp" />
+
+                    <!-- Menos entregada -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📉"
+                            android:textSize="20sp"
+                            android:layout_marginEnd="12dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Menos Entregada"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvMenosEntregada"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Cargando..."
+                                android:textSize="14sp"
+                                android:textColor="#FF9800"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Menor promedio -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📊"
+                            android:textSize="20sp"
+                            android:layout_marginEnd="12dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Menor Promedio"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvMenorPromedio"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Cargando..."
+                                android:textSize="14sp"
+                                android:textColor="#F44336"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

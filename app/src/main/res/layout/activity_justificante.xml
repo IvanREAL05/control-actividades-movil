@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Toolbar fijo arriba -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:title="Justificante"
+        android:titleTextColor="@android:color/white" />
+
+    <!-- ScrollView con formulario -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etFechaExpedicion"
+                android:hint="Fecha de expedición (yyyy-MM-dd)" />
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etMatricula"
+                android:hint="Matrícula" />
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etNombreEstudiante"
+                android:hint="Nombre del estudiante" />
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etFechaInicio"
+                android:hint="Fecha inicio permiso (yyyy-MM-dd)" />
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etFechaFin"
+                android:hint="Fecha fin permiso (yyyy-MM-dd)" />
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etGestor"
+                android:hint="Nombre del gestor" />
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etNumeroGestor"
+                android:hint="Número del gestor" />
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etSituacion"
+                android:hint="Situación (detalle)"
+                android:minLines="3"
+                android:gravity="top"
+                android:inputType="textMultiLine" />
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etFolio"
+                android:hint="Folio de aprobación (opcional)" />
+
+            <EditText
+                style="@style/CampoTextoJustificante"
+                android:id="@+id/etEjecutivo"
+                android:hint="Ejecutivo (opcional)" />
+
+            <Button
+                android:id="@+id/btnSeleccionarPdf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="Seleccionar justificante PDF"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/tvNombreArchivo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No se ha seleccionado PDF"
+                android:textColor="#555555"
+                android:paddingTop="8dp"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btnSeleccionarIne"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="Seleccionar copia de INE"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/tvNombreArchivoIne"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No se ha seleccionado INE"
+                android:textColor="#555555"
+                android:paddingTop="8dp"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btnEnviarJustificante"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="Enviar justificante"
+                android:layout_marginTop="12dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

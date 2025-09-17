@@ -1,0 +1,17 @@
+package com.example.control_actividades
+
+data class ClaseInfo(
+    val id_clase: Int,
+    val nombre_clase: String?,
+    val nrc: String?,
+    val aula: String?,
+    val materia: String?,
+    val materia_clave: String?,
+    val grupo: String?,
+    val turno: String?,
+    val nivel: String?,
+    val hora_inicio: String?,
+    val hora_fin: String?,
+    val dia: String?,
+    val nombre_profesor: String?
+)

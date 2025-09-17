@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="?android:attr/selectableItemBackground"
+    android:padding="12dp"
+    android:gravity="center_vertical"
+    android:minHeight="60dp">
+
+    <!-- Columna 1: Nombre del alumno -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:orientation="vertical"
+        android:layout_marginEnd="8dp">
+
+        <TextView
+            android:id="@+id/tvNombreAlumnoManual"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nombre Alumno"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+    </LinearLayout>
+
+    <!-- Columna 2: Matrícula -->
+    <TextView
+        android:id="@+id/tvMatriculaAlumnoManual"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:text="12345"
+        android:textSize="13sp"
+        android:textColor="@android:color/darker_gray"
+        android:gravity="center"
+        android:layout_marginEnd="8dp" />
+
+    <!-- OPCIÓN 1: RadioButtons circulares con colores -->
+    <RadioGroup
+        android:id="@+id/radioGroupEstado"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2.5"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Presente - Verde -->
+        <RadioButton
+            android:id="@+id/radioPresente"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/radio_presente_selector"
+            android:button="@null"
+            android:gravity="center" />
+
+        <!-- Tarde - Amarillo -->
+        <RadioButton
+            android:id="@+id/radioTarde"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/radio_tarde_selector"
+            android:button="@null"
+            android:gravity="center" />
+
+        <!-- Ausente - Rojo -->
+        <RadioButton
+            android:id="@+id/radioAusente"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:background="@drawable/radio_ausente_selector"
+            android:button="@null"
+            android:gravity="center" />
+
+    </RadioGroup>
+
+    <!-- OPCIÓN 2: ToggleButtons con íconos (comentado - descomenta para usar) -->
+    <!--
+    <LinearLayout
+        android:id="@+id/toggleGroupEstado"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2.5"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTogglePresente"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginEnd="4dp"
+            android:text="✓"
+            android:textSize="16sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/verdePresente"
+            app:cornerRadius="17dp"
+            app:strokeWidth="2dp"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnToggleTarde"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginEnd="4dp"
+            android:text="⏰"
+            android:textSize="12sp"
+            android:textColor="@android:color/black"
+            android:backgroundTint="@color/amarilloJustificante"
+            app:cornerRadius="17dp"
+            app:strokeWidth="2dp"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnToggleAusente"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:text="✗"
+            android:textSize="16sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/rojoAusente"
+            app:cornerRadius="17dp"
+            app:strokeWidth="2dp"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp" />
+
+    </LinearLayout>
+    -->
+
+    <!-- OPCIÓN 3: Chips circulares (comentado - descomenta para usar) -->
+    <!--
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupCircular"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2.5"
+        app:singleSelection="true"
+        app:chipSpacing="4dp"
+        android:gravity="center">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipCircularPresente"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:text=""
+            app:chipBackgroundColor="@color/verdePresente"
+            app:chipCornerRadius="17dp"
+            app:chipMinHeight="35dp"
+            app:textStartPadding="0dp"
+            app:textEndPadding="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipCircularTarde"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:text=""
+            app:chipBackgroundColor="@color/amarilloJustificante"
+            app:chipCornerRadius="17dp"
+            app:chipMinHeight="35dp"
+            app:textStartPadding="0dp"
+            app:textEndPadding="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipCircularAusente"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:text=""
+            app:chipBackgroundColor="@color/rojoAusente"
+            app:chipCornerRadius="17dp"
+            app:chipMinHeight="35dp"
+            app:textStartPadding="0dp"
+            app:textEndPadding="0dp" />
+
+    </com.google.android.material.chip.ChipGroup>
+    -->
+
+</LinearLayout>

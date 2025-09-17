@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:titleTextColor="@android:color/white"
+        android:title="Lista de Actividades"
+        android:elevation="4dp" />
+
+    <!-- Header con botón de descarga -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
+        app:cardBackgroundColor="@android:color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Botón de descarga mejorado -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDescargarExcel"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Descargar Lista en Excel"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#1976D2"
+                app:icon="@android:drawable/stat_sys_download"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:cornerRadius="8dp"
+                app:elevation="2dp" />
+
+            <!-- Progress Bar para descarga -->
+            <ProgressBar
+                android:id="@+id/progressBarDescarga"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone"
+                android:indeterminate="true"
+                android:progressTint="#1976D2" />
+
+            <!-- Texto de estado de descarga -->
+            <TextView
+                android:id="@+id/tvEstadoDescarga"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Preparando descarga..."
+                android:textSize="13sp"
+                android:textColor="#666666"
+                android:gravity="center"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Lista de alumnos -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewAlumnos"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        android:paddingHorizontal="8dp"
+        android:paddingBottom="8dp"
+        android:clipToPadding="false" />
+
+    <!-- Estado vacío (opcional) -->
+    <LinearLayout
+        android:id="@+id/layoutVacio"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📋"
+            android:textSize="48sp"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No hay alumnos registrados"
+            android:textSize="16sp"
+            android:textColor="#666666"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+</LinearLayout>

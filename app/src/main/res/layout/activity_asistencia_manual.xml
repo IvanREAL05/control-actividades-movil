@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground">
+
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:title="Asistencia Manual"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        android:elevation="4dp" />
+
+    <!-- Cabecera de la tabla -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary"
+        android:padding="12dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:text="Alumno"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="Matrícula"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:gravity="center" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2.5"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="P"
+                android:textColor="@color/verdePresente"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="J"
+                android:textColor="@color/amarilloJustificante"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="A"
+                android:textColor="@color/rojoAusente"
+                android:textStyle="bold"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Lista de alumnos en formato tabla -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerAlumnosManual"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false" />
+
+    <!-- Botón guardar cambios -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGuardarCambios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Guardar Cambios"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_margin="16dp" />
+
+</LinearLayout>

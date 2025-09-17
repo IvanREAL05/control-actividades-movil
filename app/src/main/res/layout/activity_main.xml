@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:background="@color/background_light"
+    tools:context=".MainActivity">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/gradient_toolbar"
+        android:elevation="6dp">
+
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Control de Actividades"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+    </androidx.appcompat.widget.Toolbar>
+
+
+    <!-- Header con logos -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/gradient_header_background"
+        android:paddingVertical="28dp"
+        android:paddingHorizontal="24dp"
+        android:gravity="center_horizontal">
+
+        <!-- Logos en cards -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="20dp"
+            android:weightSum="2">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="90dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="12dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                android:backgroundTint="@android:color/white">
+
+                <ImageView
+                    android:id="@+id/logoBuap"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp"
+                    android:contentDescription="@string/desc_logo_buap"
+                    android:src="@drawable/logo_buap"
+                    android:scaleType="fitCenter" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="90dp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                android:backgroundTint="@android:color/white">
+
+                <ImageView
+                    android:id="@+id/logoLazaro"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp"
+                    android:contentDescription="@string/desc_logo_lazaro"
+                    android:src="@drawable/logo_lazaro"
+                    android:scaleType="fitCenter" />
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+
+        <!-- Nombre escuela -->
+        <TextView
+            android:id="@+id/tvEscuela"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/escuela_nombre"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Botón principal docente -->
+        <Button
+            android:id="@+id/btnDocente"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:backgroundTint="@color/primary_blue"
+            android:text="@string/modo_docente"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_teacher"
+            android:drawablePadding="12dp"
+            android:elevation="4dp"
+            android:layout_marginBottom="12dp" />
+    </LinearLayout>
+
+    <!-- Avisos -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
+
+        <!-- Header avisos -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_notifications"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/avisos_oficiales"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Lista avisos en card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            android:backgroundTint="@android:color/white">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp"
+                android:clipToPadding="false" />
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+
+    <!-- Botones inferiores -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="20dp"
+        android:gravity="center"
+        android:background="@color/background_light"
+        android:weightSum="2">
+
+        <Button
+            android:id="@+id/btnAcercaDe"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="@color/primary_dark"
+            android:text="Acerca de"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_info"
+            android:drawablePadding="8dp"
+            android:elevation="2dp" />
+
+        <Button
+            android:id="@+id/btnAlumno"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="@color/celeste"
+            android:text="@string/modo_estudiante"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_student"
+            android:drawablePadding="8dp"
+            android:elevation="2dp" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "628105212021",
+    "project_id": "con-act",
+    "storage_bucket": "con-act.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:628105212021:android:50a75d863577248eb9083c",
+        "android_client_info": {
+          "package_name": "com.example.control_actividades"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJStTjmAN9OAKMiD8BaMpB3f1-kt2UL74"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
