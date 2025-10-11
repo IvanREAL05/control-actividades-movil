@@ -107,10 +107,10 @@ interface ApiService {
         @Body request: ActualizarEstadoRequest
     ): Response<ActualizarEstadoResponse>
 
-    @POST("api/asistencias")
-    suspend fun registrarAsistencia(
+    @POST("api/asistencias/")
+    fun registrarAsistencia(
         @Body request: AsistenciaRequest
-    ):AsistenciaResponse
+    ): Call<AsistenciaResponse>
 
 
 
@@ -146,6 +146,60 @@ interface ApiService {
     suspend fun getResumenClase(
         @Path("id_clase") idClase: Int
     ): ResumenClase
+
+    @GET("api/actividades/historial/{id_clase}")
+    suspend fun getHistorialAlumnos(
+        @Path("id_clase") idClase: Int
+    ): HistorialResponse
+
+    @GET("api/actividades/alumno/{id_estudiante}/clase/{id_clase}")
+    suspend fun getDetalleAlumno(
+        @Path("id_estudiante") idEstudiante: Int,
+        @Path("id_clase") idClase: Int
+    ): DetalleAlumnoResponse
+
+    // Crear observación
+    @POST("api/observaciones")
+    suspend fun crearObservacion(
+        @Body body: CrearActualizarObservacionRequest
+    ): ObservacionResponse
+
+    // Actualizar observación
+    @PUT("api/observaciones/{id}")
+    suspend fun actualizarObservacion(
+        @Path("id") id: Int,
+        @Body body: CrearActualizarObservacionRequest
+    ): ObservacionResponse
+
+    // Obtener todas las observaciones
+    @GET("api/observaciones")
+    suspend fun obtenerObservaciones(): ObservacionResponse
+
+    // Obtener por estudiante
+    @GET("api/observaciones/estudiante/{estudiante_id}")
+    suspend fun obtenerObservacionesPorEstudiante(
+        @Path("estudiante_id") estudianteId: Int
+    ): ObservacionResponse
+
+    // Eliminar observación
+    @DELETE("api/observaciones/{id}")
+    suspend fun eliminarObservacion(
+        @Path("id") id: Int
+    ): ObservacionResponse
+
+    @POST("api/actividades/validar-entrega")
+    suspend fun validarEntrega(
+        @Body request: EntregaRequest
+    ): ValidarEntregaResponse
+
+    @GET("api/reportes/excel/clase/completo/{idClase}")
+    @Streaming
+    suspend fun descargarReporteClaseCompleto(
+        @Path("idClase") idClase: Int
+    ): Response<ResponseBody>
+
+
+
 
 
 }

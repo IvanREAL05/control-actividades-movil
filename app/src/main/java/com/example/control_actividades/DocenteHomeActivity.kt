@@ -129,8 +129,10 @@ class DocenteHomeActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnVerLista).setOnClickListener {
             manejarAccionClase { idClase ->
+                Log.d("ID_DEBUG", "🔸 Enviando desde DocenteHome: idClase=$idClase, idProfesor=$idProfesor")
                 val intent = Intent(this, ListaGrupoActivity::class.java)
                 intent.putExtra("id_clase", idClase)
+                intent.putExtra("id_profesor", idProfesor)
                 startActivity(intent)
             }
         }

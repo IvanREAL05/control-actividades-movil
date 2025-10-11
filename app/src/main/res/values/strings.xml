@@ -21,5 +21,12 @@
     <string name="connection_error">Error de conexión: %s</string>
     <string name="scan_cancelled">Escaneo cancelado</string>
 
+    <string-array name="tipos_actividad">
+        <item>actividad</item>
+        <item>examen</item>
+        <item>proyecto</item>
+        <item>practicas</item>
+    </string-array>
+
 
 </resources>

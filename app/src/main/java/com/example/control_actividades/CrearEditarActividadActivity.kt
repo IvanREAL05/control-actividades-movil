@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import android.view.View
 
 class CrearEditarActividadActivity : AppCompatActivity() {
 
@@ -21,6 +22,9 @@ class CrearEditarActividadActivity : AppCompatActivity() {
     private lateinit var btnSeleccionarHora: Button
     private lateinit var etValorMaximo: EditText
     private lateinit var btnGuardarActividad: Button
+    private lateinit var spinnerTipoActividad: Spinner
+    private var tipoSeleccionado: String = ""
+
 
     private var idClaseSeleccionado: Int = -1 // Se recibe por Intent
     private var modo: String = "crear" // o "editar"
@@ -41,6 +45,45 @@ class CrearEditarActividadActivity : AppCompatActivity() {
         btnSeleccionarHora = findViewById(R.id.btnSeleccionarHora)
         etValorMaximo = findViewById(R.id.etValorMaximo)
         btnGuardarActividad = findViewById(R.id.btnGuardarActividad)
+        spinnerTipoActividad = findViewById(R.id.spinnerTipoActividad)
+        val tiposArray = resources.getStringArray(R.array.tipos_actividad)
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            tiposArray.map { it.replaceFirstChar { c -> c.uppercase() } } // solo visual
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerTipoActividad.adapter = adapter
+
+        spinnerTipoActividad.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                tipoSeleccionado = tiposArray[position] // minúscula para backend
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                tipoSeleccionado = ""
+            }
+        }
+
+        spinnerTipoActividad.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                tipoSeleccionado = parent?.getItemAtPosition(position).toString()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                tipoSeleccionado = ""
+            }
+        }
 
         // SOLO esto para el cursor:
         listOf(etTitulo, etDescripcion, etValorMaximo).forEach { editText ->
@@ -201,7 +244,8 @@ class CrearEditarActividadActivity : AppCompatActivity() {
             fecha_entrega = fechaEntregaSeleccionada,
             hora_entrega = horaEntregaSeleccionada ?: "23:59:59",
             id_clase = idClaseSeleccionado,
-            valor_maximo = valorMaximo
+            valor_maximo = valorMaximo,
+            tipo_actividad = tipoSeleccionado
         )
 
         if (modo == "crear") {

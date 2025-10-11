@@ -1,120 +1,216 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_gray">
+    android:background="#F8FAFF">
 
-    <!-- Toolbar moderna -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
+    <!-- Header con gradiente azul -->
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorPrimary"
-        android:elevation="8dp"
-        app:title="Panel Actividades"
-        app:titleTextColor="@android:color/white"
-        app:titleCentered="true" />
+        android:layout_height="wrap_content"
+        android:background="@drawable/header_gradient_blue"
+        android:paddingTop="24dp"
+        android:paddingBottom="20dp"
+        android:paddingHorizontal="20dp">
 
-    <!-- Contenido scrollable -->
+        <!-- Título principal -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Panel de Actividades"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Gestiona y controla todas tus actividades"
+            android:textSize="14sp"
+            android:textColor="#E3F2FD"
+            android:gravity="center"
+            android:alpha="0.9" />
+
+    </LinearLayout>
+
+    <!-- Contenido principal -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:paddingTop="8dp">
 
         <LinearLayout
             android:orientation="vertical"
+            android:padding="20dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="20dp">
+            android:layout_height="wrap_content">
 
-            <!-- Botón Crear Actividad -->
+            <!-- Card principal con botón destacado -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="20dp"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="6dp">
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="@android:color/white">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCrearActividad"
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="72dp"
-                    android:text="Crear Nueva Actividad"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/white"
-                    app:icon="@drawable/ic_add"
-                    app:iconGravity="textStart"
-                    app:iconTint="@android:color/white"
-                    app:iconSize="28dp"
-                    app:cornerRadius="20dp"
-                    app:strokeWidth="0dp"
-                    app:backgroundTint="@color/colorPrimaryDark"
-                    style="@style/Widget.MaterialComponents.Button.Filled"/>
+                    android:layout_height="wrap_content"
+                    android:padding="24dp">
+
+                    <!-- Botón principal - Crear Actividad -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCrearActividad"
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:layout_marginBottom="20dp"
+                        android:text="Crear Nueva Actividad"
+                        android:textAllCaps="false"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:icon="@drawable/ic_add"
+                        app:iconGravity="textStart"
+                        app:iconSize="28dp"
+                        app:cornerRadius="16dp"
+                        android:backgroundTint="#2196F3"
+                        android:textColor="@android:color/white"
+                        android:elevation="4dp"
+                        app:rippleColor="#1976D2" />
+
+                    <!-- Separador visual -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E3F2FD"
+                        android:layout_marginVertical="16dp" />
+
+                    <!-- Grid de botones secundarios optimizado -->
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <!-- Fila 1: Ver Actividades y Historial -->
+                        <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="14dp"
+                            android:weightSum="2">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnVerActividades"
+                                android:layout_width="0dp"
+                                android:layout_height="80dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="8dp"
+                                android:text="📋\nVer Todo"
+                                android:textAllCaps="false"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                app:iconGravity="top"
+                                app:iconSize="32dp"
+                                app:cornerRadius="16dp"
+                                android:backgroundTint="#E3F2FD"
+                                android:textColor="#1976D2"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                app:strokeColor="#BBDEFB"
+                                app:strokeWidth="2dp"
+                                android:paddingVertical="8dp"
+                                android:paddingHorizontal="8dp"
+                                android:lineSpacingExtra="2dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnHistorialAlumnos"
+                                android:layout_width="0dp"
+                                android:layout_height="80dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:text="🧑‍🎓\nHistorial"
+                                android:textAllCaps="false"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                app:iconGravity="top"
+                                app:iconSize="32dp"
+                                app:cornerRadius="16dp"
+                                android:backgroundTint="#E3F2FD"
+                                android:textColor="#1976D2"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                app:strokeColor="#BBDEFB"
+                                app:strokeWidth="2dp"
+                                android:paddingVertical="8dp"
+                                android:paddingHorizontal="8dp"
+                                android:lineSpacingExtra="2dp" />
+
+                        </LinearLayout>
+
+                        <!-- Fila 2: Botones de descarga optimizados -->
+                        <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:weightSum="2">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnDescargarLista"
+                                android:layout_width="0dp"
+                                android:layout_height="64dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="8dp"
+                                android:text="📊\nDetalles"
+                                android:textAllCaps="false"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                app:iconGravity="top"
+                                app:iconSize="28dp"
+                                app:cornerRadius="14dp"
+                                android:backgroundTint="#4FC3F7"
+                                android:textColor="@android:color/white"
+                                android:paddingVertical="6dp"
+                                android:paddingHorizontal="8dp"
+                                android:lineSpacingExtra="2dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnDescargarListaGeneral"
+                                android:layout_width="0dp"
+                                android:layout_height="64dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:text="📈\nGeneral"
+                                android:textAllCaps="false"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                app:iconGravity="top"
+                                app:iconSize="28dp"
+                                app:cornerRadius="14dp"
+                                android:backgroundTint="#29B6F6"
+                                android:textColor="@android:color/white"
+                                android:paddingVertical="6dp"
+                                android:paddingHorizontal="8dp"
+                                android:lineSpacingExtra="2dp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Botón Ver Actividades -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="6dp">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnVerActividades"
-                    android:layout_width="match_parent"
-                    android:layout_height="72dp"
-                    android:text="Ver Todas las Actividades"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/white"
-                    app:icon="@drawable/ic_list"
-                    app:iconGravity="textStart"
-                    app:iconTint="@android:color/white"
-                    app:iconSize="28dp"
-                    app:cornerRadius="20dp"
-                    app:strokeWidth="0dp"
-                    app:backgroundTint="@color/colorAccent"
-                    style="@style/Widget.MaterialComponents.Button.Filled"/>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Botón Descargar Reporte -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="6dp">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnDescargarLista"
-                    android:layout_width="match_parent"
-                    android:layout_height="72dp"
-                    android:text="Descargar Reporte"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/white"
-                    app:icon="@drawable/ic_download"
-                    app:iconGravity="textStart"
-                    app:iconTint="@android:color/white"
-                    app:iconSize="28dp"
-                    app:cornerRadius="20dp"
-                    app:strokeWidth="0dp"
-                    app:backgroundTint="@color/colorPrimary"
-                    style="@style/Widget.MaterialComponents.Button.Filled"/>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Card de instrucciones -->
+            <!-- Card informativo -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/light_blue_transparent">
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#E8F4FD">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -123,80 +219,158 @@
                     android:padding="16dp"
                     android:gravity="center_vertical">
 
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:src="@drawable/ic_info2"
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="32dp"
+                        android:background="#2196F3"
                         android:layout_marginEnd="12dp" />
 
-                    <TextView
+                    <LinearLayout
+                        android:orientation="vertical"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Usa los botones para crear, ver o descargar actividades rápidamente."
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="2dp" />
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tip de uso"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:textColor="#1976D2"
+                            android:layout_marginBottom="2dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Crea actividades y descarga reportes en formato Excel para análisis detallado"
+                            android:textColor="#0D47A1"
+                            android:textSize="13sp"
+                            android:lineSpacingExtra="2dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💡"
+                        android:textSize="20sp" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Mensaje “no hay actividades” -->
+            <!-- Sección de actividades -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp"
+                android:paddingHorizontal="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Actividades Registradas"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#1976D2" />
+
+                <!-- Badge contador -->
+                <TextView
+                    android:id="@+id/tvContadorActividades"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:text="0"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/circle_badge_blue"
+                    android:gravity="center"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Estado vacío mejorado -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardNoActividades"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/light_gray"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@android:color/white"
                 android:visibility="gone">
 
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="24dp"
+                    android:padding="32dp"
                     android:gravity="center">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📝"
-                        android:textSize="48sp"
-                        android:layout_marginBottom="12dp" />
+                    <View
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/empty_state_circle"
+                        android:layout_marginBottom="16dp" />
 
                     <TextView
                         android:id="@+id/tvNoActividades"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="No hay actividades creadas"
-                        android:textSize="16sp"
+                        android:text="No hay actividades registradas"
+                        android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_primary"
+                        android:textColor="#1976D2"
                         android:gravity="center"
-                        android:layout_marginBottom="6dp" />
+                        android:layout_marginBottom="8dp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Crea tu primera actividad para comenzar"
+                        android:text="¡Comienza creando tu primera actividad para ver el progreso aquí!"
                         android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        android:gravity="center" />
+                        android:textColor="#757575"
+                        android:gravity="center"
+                        android:alpha="0.8" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- RecyclerView -->
+            <!-- RecyclerView optimizado -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerActividades"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:minHeight="400dp"
                 android:clipToPadding="false"
-                android:paddingBottom="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="24dp"
                 android:scrollbars="vertical"
-                android:fadeScrollbars="false"
-                android:visibility="gone" />
+                android:fadeScrollbars="true"
+                android:scrollbarStyle="outsideOverlay"
+                android:scrollbarThumbVertical="@drawable/scrollbar_blue_thumb"
+                android:visibility="gone"
+                android:overScrollMode="ifContentScrolls" />
 
         </LinearLayout>
     </ScrollView>
+
+    <!-- FAB alternativo con estilo moderno -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCrearActividad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:src="@drawable/ic_add"
+        android:contentDescription="Crear nueva actividad"
+        app:tint="@android:color/white"
+        android:backgroundTint="#2196F3"
+        app:borderWidth="0dp"
+        app:elevation="8dp"
+        app:hoveredFocusedTranslationZ="12dp"
+        app:pressedTranslationZ="16dp"
+        android:visibility="gone" />
+
 </LinearLayout>

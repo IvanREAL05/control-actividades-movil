@@ -136,4 +136,7 @@
     <color name="away">#FF9800</color>
     <color name="text_tertiary">#888888</color>
 
+    <color name="blue">#2341E6</color>
+    <color name="colorPrimaryLight">#FFBB86FC</color> <!-- O el valor que quieras -->
+
 </resources>

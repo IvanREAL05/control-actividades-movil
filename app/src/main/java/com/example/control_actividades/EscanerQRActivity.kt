@@ -15,15 +15,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.zxing.integration.android.IntentIntegrator
 import com.google.zxing.integration.android.IntentResult
-import retrofit2.Response
 import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
 import android.animation.ObjectAnimator
 import android.widget.ProgressBar
 import android.os.Handler
 import android.os.Looper
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+
 
 class EscanerQRActivity : AppCompatActivity() {
 
@@ -31,8 +33,12 @@ class EscanerQRActivity : AppCompatActivity() {
     private lateinit var permisoCamaraLauncher: ActivityResultLauncher<String>
     private lateinit var tvScanResult: TextView
     private lateinit var progressBar: ProgressBar
+
     private var escaneando: Boolean = false
     private var estadoSeleccionado: String = "presente"
+    private var currentDialog: AlertDialog? = null
+
+    private val activityId = System.currentTimeMillis().toString()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +49,6 @@ class EscanerQRActivity : AppCompatActivity() {
 
         if (idClase == -1) {
             Log.e("ID_CLASE_DEBUG", "ID de clase inválido en escáner")
-
             Toast.makeText(this, "⚠️ No hay clase activa. No puedes escanear.", Toast.LENGTH_LONG).show()
             finish()
             return
@@ -51,7 +56,7 @@ class EscanerQRActivity : AppCompatActivity() {
 
         estadoSeleccionado = intent.getStringExtra("modo") ?: "presente"
         tvScanResult = findViewById(R.id.tvScanResult)
-        progressBar = findViewById(R.id.progressBar) // Agregar ProgressBar al layout
+        progressBar = findViewById(R.id.progressBar)
 
         val btnCancelar: Button = findViewById(R.id.btnCancelar)
         val btnVerLista: Button = findViewById(R.id.btnVerLista)
@@ -75,6 +80,7 @@ class EscanerQRActivity : AppCompatActivity() {
             val intent = result.data
             val res: IntentResult? = IntentIntegrator.parseActivityResult(result.resultCode, intent)
             escaneando = false
+
             if (res != null) {
                 if (res.contents == null) {
                     tvScanResult.text = getString(R.string.scan_cancelled)
@@ -101,6 +107,8 @@ class EscanerQRActivity : AppCompatActivity() {
             if (escaneando) {
                 escaneando = false
                 showToast("Escaneo cancelado")
+            } else if (ScannerStateManager.isProcessing) {
+                showToast("⏳ Espera a que termine el registro...")
             } else {
                 finish()
             }
@@ -113,9 +121,28 @@ class EscanerQRActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        currentDialog?.dismiss()
+        currentDialog = null
+        ScannerStateManager.onActivityDestroyed(activityId)
+    }
+
     private fun iniciarEscaneo() {
-        if (escaneando) return
+        if (escaneando) {
+            Log.w("ESCANEO", "Ya hay un escaneo en progreso")
+            return
+        }
+
+        if (ScannerStateManager.isProcessing) {
+            Log.w("ESCANEO", "Hay una petición HTTP en proceso GLOBALMENTE, esperando...")
+            showToast("⏳ Espera a que termine el registro anterior...")
+            // ✅ NO cerrar la Activity, solo esperar
+            return
+        }
+
         escaneando = true
+        Log.d("ESCANEO", "Iniciando nuevo escaneo (Activity: $activityId)")
 
         val integrator = IntentIntegrator(this)
         integrator.setPrompt("Escanea el código QR")
@@ -125,7 +152,13 @@ class EscanerQRActivity : AppCompatActivity() {
     }
 
     private fun processScanResult(scanData: String) {
-        // 🔹 FEEDBACK INMEDIATO - Usuario sabe que algo está pasando
+        if (!ScannerStateManager.tryLock(activityId)) {
+            Log.w("API", "Ya hay una petición en proceso en otra Activity")
+            showToast("⏳ Procesando petición anterior...")
+            // ✅ NO cerrar la Activity
+            return
+        }
+
         tvScanResult.text = "📡 Enviando asistencia..."
         mostrarIndicadorCarga(true)
         reproducirSonidoEscaneo()
@@ -141,136 +174,187 @@ class EscanerQRActivity : AppCompatActivity() {
             id_clase = idClase
         )
 
-        Log.d("API_REQUEST", "Request completo: QR=${scanData}, Estado=${estadoSeleccionado}, ID_Clase=${idClase}")
+        val startTime = System.currentTimeMillis()
+        Log.d("API", "🚀 Iniciando petición HTTP...")
+        ScannerStateManager.markRequestStarted()
 
-        // 🔹 Lanzar coroutine para llamar a Retrofit
-        lifecycleScope.launch {
-            val startTime = System.currentTimeMillis()
-            try {
-                val response = RetrofitClient.instance.registrarAsistencia(request)
+        // 🔹 USAR CALLBACKS EN LUGAR DE COROUTINES
+        RetrofitClient.instance.registrarAsistencia(request).enqueue(object : Callback<AsistenciaResponse> {
+            override fun onResponse(call: Call<AsistenciaResponse>, response: Response<AsistenciaResponse>) {
                 val endTime = System.currentTimeMillis()
                 val responseTime = endTime - startTime
+
                 Log.d("PERFORMANCE", "⏱️ Tiempo de respuesta: ${responseTime}ms")
 
-                mostrarIndicadorCarga(false)
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) {
+                        Log.w("LIFECYCLE", "Activity ya destruida, limpiando estado")
+                        ScannerStateManager.unlock(activityId)
+                        return@runOnUiThread
+                    }
 
-                if (response.success) {
-                    // 🔹 ÉXITO
-                    reproducirSonidoExito()
-                    animarTextoExito()
+                    mostrarIndicadorCarga(false)
 
-                    val mensaje = response.mensaje ?: "Asistencia registrada correctamente"
-                    tvScanResult.text = "✅ $mensaje"
-                    showToastExito("✅ $mensaje")
-                    Log.d("API", "Respuesta exitosa: $mensaje")
+                    if (response.isSuccessful && response.body() != null) {
+                        val body = response.body()!!
 
-                    // 🔹 Auto-continuar después de 2 segundos si es exitoso
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        mostrarDialogoContinuar()
-                    }, 2000)
+                        Log.d("API_RESPONSE", "✅ Respuesta exitosa")
+                        Log.d("API_RESPONSE", "Success: ${body.success}")
+                        Log.d("API_RESPONSE", "Mensaje: ${body.mensaje}")
 
-                } else {
-                    // 🔹 ERROR LÓGICO (backend devolvió success=false)
-                    tvScanResult.text = "❌ Error al registrar"
-                    showToast("❌ Error: ${response.mensaje ?: "Revisa tu conexión"}")
-                    reproducirSonidoError()
-                    vibrarCelular()
-                    mostrarDialogoContinuar()
+                        when {
+                            body.success == true -> {
+                                reproducirSonidoExito()
+                                animarTextoExito()
+
+                                val mensaje = body.mensaje ?: "Asistencia registrada"
+                                tvScanResult.text = "✅ $mensaje"
+                                showToastExito("✅ $mensaje")
+
+                                ScannerStateManager.unlock(activityId)
+
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    if (!isFinishing && !isDestroyed) {
+                                        mostrarDialogoContinuar()
+                                    }
+                                }, 2000)
+                            }
+
+                            body.duplicado == true -> {
+                                reproducirSonidoAdvertencia()
+                                val mensaje = body.mensaje ?: "Ya registrado"
+                                tvScanResult.text = "ℹ️ $mensaje"
+
+                                ScannerStateManager.unlock(activityId)
+                                mostrarDialogoAlerta("Ya registrado 🎓", mensaje)
+                            }
+
+                            else -> {
+                                reproducirSonidoError()
+                                vibrarCelular()
+                                val mensaje = body.mensaje ?: "Error desconocido"
+                                tvScanResult.text = "❌ $mensaje"
+                                showToast("❌ $mensaje")
+
+                                ScannerStateManager.unlock(activityId)
+                                mostrarDialogoContinuar()
+                            }
+                        }
+                    } else {
+                        // Error HTTP
+                        Log.e("API_ERROR", "Error HTTP: ${response.code()}")
+                        manejarErrorHTTP(response, responseTime)
+                    }
                 }
-            } catch (e: Exception) {
+            }
+
+            override fun onFailure(call: Call<AsistenciaResponse>, t: Throwable) {
                 val endTime = System.currentTimeMillis()
                 val responseTime = endTime - startTime
-                Log.e("PERFORMANCE", "❌ Error después de ${responseTime}ms: ${e.message}")
 
-                mostrarIndicadorCarga(false)
-                tvScanResult.text = "❌ Error de conexión"
-                showToast("❌ Verifica tu conexión a Internet")
-                reproducirSonidoError()
-                vibrarCelular()
-                mostrarDialogoContinuar()
+                Log.e("NETWORK_ERROR", "❌ onFailure después de ${responseTime}ms")
+                Log.e("NETWORK_ERROR", "Tipo: ${t.javaClass.simpleName}")
+                Log.e("NETWORK_ERROR", "Mensaje: ${t.message}")
+
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) {
+                        ScannerStateManager.unlock(activityId)
+                        return@runOnUiThread
+                    }
+
+                    mostrarIndicadorCarga(false)
+                    tvScanResult.text = "❌ Sin conexión a Internet"
+                    showToast("❌ Verifica tu conexión a Internet")
+                    reproducirSonidoError()
+                    vibrarCelular()
+
+                    ScannerStateManager.unlock(activityId)
+                    mostrarDialogoContinuar()
+                }
             }
-        }
+        })
     }
 
-    private fun manejarError(response: Response<AsistenciaResponse>, responseTime: Long) {
-        val errorBody = response.errorBody()?.string()
-        Log.e("API", "Error en la respuesta (${responseTime}ms): $errorBody")
+    private fun manejarErrorHTTP(response: Response<AsistenciaResponse>, responseTime: Long) {
+        reproducirSonidoError()
+        vibrarCelular()
 
-        when {
-            errorBody?.contains("Ya existe un registro de asistencia") == true -> {
-                // 🔹 Ya registrado - Feedback específico pero no alarmante
-                reproducirSonidoAdvertencia()
-                tvScanResult.text = "ℹ️ Ya registrado previamente"
-                mostrarDialogoAlerta(
-                    "Ya registrado 🎓",
-                    "Este alumno ya tiene asistencia registrada en esta clase."
-                )
+        when (response.code()) {
+            400 -> {
+                tvScanResult.text = "❌ QR inválido o expirado"
+                showToast("❌ QR inválido o expirado")
             }
-            errorBody?.contains("Clase no encontrada") == true -> {
-                reproducirSonidoError()
-                tvScanResult.text = "⚠️ Clase no encontrada"
-                showToast("⚠️ Clase no encontrada - Revisa tu horario")
-                mostrarDialogoContinuar()
+            404 -> {
+                tvScanResult.text = "❌ Estudiante no encontrado"
+                showToast("❌ Estudiante no encontrado")
             }
             else -> {
-                reproducirSonidoError()
-                tvScanResult.text = "❌ Error del servidor"
+                tvScanResult.text = "❌ Error HTTP ${response.code()}"
                 showToast("❌ Error del servidor")
-                mostrarDialogoContinuar()
             }
         }
-    }
 
-    private fun mostrarIndicadorCarga(mostrar: Boolean) {
-        progressBar.visibility = if (mostrar) android.view.View.VISIBLE else android.view.View.GONE
-        if (mostrar) {
-            // Animación de rotación del progress bar
-            val animator = ObjectAnimator.ofFloat(progressBar, "rotation", 0f, 360f)
-            animator.duration = 1000
-            animator.repeatCount = ObjectAnimator.INFINITE
-            animator.start()
-        }
-    }
-
-    private fun animarTextoExito() {
-        // Animación de escala para el texto de éxito
-        val scaleX = ObjectAnimator.ofFloat(tvScanResult, "scaleX", 1f, 1.2f, 1f)
-        val scaleY = ObjectAnimator.ofFloat(tvScanResult, "scaleY", 1f, 1.2f, 1f)
-        scaleX.duration = 300
-        scaleY.duration = 300
-        scaleX.start()
-        scaleY.start()
+        ScannerStateManager.unlock(activityId)
+        mostrarDialogoContinuar()
     }
 
     private fun mostrarDialogoContinuar() {
+        if (isFinishing || isDestroyed) return
+
+        currentDialog?.dismiss()
+
         val builder = AlertDialog.Builder(this)
         builder.setTitle("¿Seguir escaneando?")
         builder.setMessage("¿Quieres registrar otro alumno?")
 
         builder.setPositiveButton("Sí, continuar") { dialog, _ ->
             dialog.dismiss()
+            currentDialog = null
             iniciarEscaneo()
         }
 
         builder.setNegativeButton("Terminar") { dialog, _ ->
             dialog.dismiss()
+            currentDialog = null
             finish()
         }
 
         builder.setCancelable(false)
-        builder.show()
+        currentDialog = builder.create()
+        currentDialog?.show()
     }
 
     private fun mostrarDialogoAlerta(titulo: String, mensaje: String) {
+        if (isFinishing || isDestroyed) return
+
+        currentDialog?.dismiss()
+
         val builder = AlertDialog.Builder(this)
         builder.setTitle(titulo)
         builder.setMessage(mensaje)
+
         builder.setPositiveButton("Continuar") { dialog, _ ->
             dialog.dismiss()
+            currentDialog = null
             mostrarDialogoContinuar()
         }
+
         builder.setCancelable(false)
-        builder.show()
+        currentDialog = builder.create()
+        currentDialog?.show()
+    }
+
+    private fun mostrarIndicadorCarga(mostrar: Boolean) {
+        progressBar.visibility = if (mostrar) android.view.View.VISIBLE else android.view.View.GONE
+    }
+
+    private fun animarTextoExito() {
+        val scaleX = ObjectAnimator.ofFloat(tvScanResult, "scaleX", 1f, 1.2f, 1f)
+        val scaleY = ObjectAnimator.ofFloat(tvScanResult, "scaleY", 1f, 1.2f, 1f)
+        scaleX.duration = 300
+        scaleY.duration = 300
+        scaleX.start()
+        scaleY.start()
     }
 
     private fun showToast(message: String) {
@@ -281,14 +365,13 @@ class EscanerQRActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    // 🔹 Diferentes sonidos para diferentes situaciones
     private fun reproducirSonidoEscaneo() {
         try {
             val mediaPlayer = MediaPlayer.create(this, R.raw.scan_success)
             mediaPlayer?.start()
             mediaPlayer?.setOnCompletionListener { it.release() }
         } catch (e: Exception) {
-            Log.e("AUDIO", "Error reproduciendo sonido de escaneo: ${e.message}")
+            Log.e("AUDIO", "Error: ${e.message}")
         }
     }
 
@@ -298,7 +381,7 @@ class EscanerQRActivity : AppCompatActivity() {
             mediaPlayer?.start()
             mediaPlayer?.setOnCompletionListener { it.release() }
         } catch (e: Exception) {
-            Log.e("AUDIO", "Error reproduciendo sonido de éxito: ${e.message}")
+            Log.e("AUDIO", "Error: ${e.message}")
         }
     }
 
@@ -308,7 +391,7 @@ class EscanerQRActivity : AppCompatActivity() {
             mediaPlayer?.start()
             mediaPlayer?.setOnCompletionListener { it.release() }
         } catch (e: Exception) {
-            Log.e("AUDIO", "Error reproduciendo sonido de error: ${e.message}")
+            Log.e("AUDIO", "Error: ${e.message}")
         }
     }
 
@@ -318,7 +401,7 @@ class EscanerQRActivity : AppCompatActivity() {
             mediaPlayer?.start()
             mediaPlayer?.setOnCompletionListener { it.release() }
         } catch (e: Exception) {
-            Log.e("AUDIO", "Error reproduciendo sonido de advertencia: ${e.message}")
+            Log.e("AUDIO", "Error: ${e.message}")
         }
     }
 
@@ -335,7 +418,7 @@ class EscanerQRActivity : AppCompatActivity() {
                 }
             }
         } catch (e: Exception) {
-            Log.e("VIBRATION", "Error vibrando: ${e.message}")
+            Log.e("VIBRATION", "Error: ${e.message}")
         }
     }
 }

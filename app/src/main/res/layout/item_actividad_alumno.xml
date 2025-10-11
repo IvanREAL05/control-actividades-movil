@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:background="@drawable/ripple_effect_light"
+    android:minHeight="40dp"
+    android:gravity="center_vertical">
+
+    <!-- Icono de estado -->
+    <TextView
+        android:id="@+id/tvIconoEstado"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:text="📋"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:layout_marginEnd="8dp" />
+
+    <!-- Información de la actividad -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/tvTituloActividad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Título de la Actividad"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/tvEstadoActividad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✅ Entregado"
+            android:textSize="11sp"
+            android:textColor="#4CAF50"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <!-- Puntuación -->
+    <TextView
+        android:id="@+id/tvPuntosActividad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="10 pts"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="#4CAF50"
+        android:background="@drawable/rounded_background_light"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="3dp"
+        android:minWidth="40dp"
+        android:gravity="center" />
+
+</LinearLayout>

@@ -15,5 +15,6 @@ data class Actividad(
     val estado: String?,
     val fecha_entrega_real: String?,
     val vigencia: String?,
-    val valor_maximo: Int?
+    val valor_maximo: Int = 10,
+    val tipo_actividad: String
 ) : Parcelable

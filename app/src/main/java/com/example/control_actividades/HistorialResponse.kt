@@ -1,0 +1,43 @@
+package com.example.control_actividades
+import com.google.gson.annotations.SerializedName
+
+// Data classes que coinciden con tu endpoint
+data class HistorialResponse(
+    val total_actividades: Int,
+    val total_ponderacion: Int,
+    val historial: List<AlumnoHistorialCompleto>
+)
+
+data class AlumnoHistorialCompleto(
+    @SerializedName("id_estudiante") val id_estudiante: Int,
+    @SerializedName("nombre") val nombre: String,
+    @SerializedName("apellido") val apellido: String,
+    @SerializedName("matricula") val matricula: String?,
+    @SerializedName("no_lista") val no_lista: Int,
+    @SerializedName("correo") val correo: String?,
+    @SerializedName("estado_actual") val estado_actual: String?,
+    @SerializedName("grupo") val grupo: String?,
+    @SerializedName("actividades") val actividades: List<ActividadDetalle>,
+    @SerializedName("entregado") val entregado: Int,
+    @SerializedName("ponderacion") val ponderacion: Double
+) {
+    // Campos derivados
+    val actividadesEntregadas: Int
+        get() = actividades.count { it.estado == "entregado" }
+
+    val totalActividades: Int
+        get() = actividades.size
+
+    val puntosObtenidos: Double
+        get() = actividades.sumOf { (it.calificacion ?: 0).toDouble() }
+
+    val puntosTotales: Double
+        get() = actividades.sumOf { it.valor_maximo.toDouble() }
+}
+
+data class ActividadEntregada(
+    val id_actividad: Int,
+    val titulo: String,
+    val estado: String, // "entregado", "pendiente", etc.
+    val valor_maximo: Int
+)

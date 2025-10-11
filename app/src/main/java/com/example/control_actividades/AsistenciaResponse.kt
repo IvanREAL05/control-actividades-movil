@@ -1,9 +1,20 @@
 package com.example.control_actividades
 
+import com.google.gson.annotations.SerializedName
+
 data class AsistenciaResponse(
-    val success: Boolean,
-    val mensaje: String?,
+    @SerializedName("success")
+    val success: Boolean = false,
+
+    @SerializedName("mensaje")
+    val mensaje: String? = null,
+
+    @SerializedName("nuevo")
+    val nuevo: Boolean? = null,
+
+    @SerializedName("duplicado")
     val duplicado: Boolean? = null,
-    val actualizado: Boolean? = null,
-    val nuevo: Boolean? = null
+
+    @SerializedName("actualizado")
+    val actualizado: Boolean? = null
 )

@@ -67,6 +67,22 @@
                             android:inputType="textCapSentences" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Tipo de Actividad -->
+                    <!-- Tipo de actividad -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Tipo de actividad"
+                        android:textStyle="bold"
+                        android:textColor="@color/gray"
+                        android:layout_marginTop="12dp"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerTipoActividad"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:spinnerMode="dropdown"/>
+
                     <!-- Descripción -->
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"

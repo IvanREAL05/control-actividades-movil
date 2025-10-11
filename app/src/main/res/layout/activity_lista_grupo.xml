@@ -198,17 +198,17 @@
             android:layout_marginBottom="6dp"
             android:textSize="14sp" />
 
-        <!-- Botón: Volver -->
+        <!-- Botón: Observaciones -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnVolver"
+            android:id="@+id/btnObservaciones"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="Volver"
+            android:text="Observaciones"
             android:textColor="#1976D2"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             app:strokeColor="#1976D2"
             app:cornerRadius="8dp"
-            app:icon="@drawable/ic_arrow_back_24"
+            app:icon="@drawable/ic_notes_24"
             app:iconTint="#1976D2"
             app:iconGravity="textStart"
             android:textSize="14sp" />

@@ -26,7 +26,7 @@ class ListaGrupoActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var btnDescargar: Button
-    private lateinit var btnVolver: Button
+    private lateinit var btnObservaciones: Button
     private lateinit var swipeRefreshLayout: androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     private lateinit var alumnoAdapter: AlumnoAdapter
     private lateinit var progressBar: ProgressBar
@@ -38,6 +38,7 @@ class ListaGrupoActivity : AppCompatActivity() {
     private lateinit var tvJustificantes: TextView
 
     private var idClase: Int = -1
+    private var idProfesor: Int = -1
 
     // Variables para filtrado
     private var alumnosCompletos = listOf<AlumnoResponse>()
@@ -54,8 +55,15 @@ class ListaGrupoActivity : AppCompatActivity() {
         setupListeners()
 
         idClase = intent.getIntExtra("id_clase", -1)
+        idProfesor = intent.getIntExtra("id_profesor", -1)
+        Log.d("ID_DEBUG", "🔸 Recibido en ListaGrupo: idClase=$idClase, idProfesor=$idProfesor")
         if (idClase == -1) {
             Toast.makeText(this, "ID de clase no recibido", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+        if (idProfesor == -1) {
+            Toast.makeText(this, "ID de profesor no recibido", Toast.LENGTH_LONG).show()
             finish()
             return
         }
@@ -67,7 +75,8 @@ class ListaGrupoActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         recyclerView = findViewById(R.id.recyclerAlumnos)
         btnDescargar = findViewById(R.id.btnDescargarLista)
-        btnVolver = findViewById(R.id.btnVolver)
+        btnObservaciones = findViewById(R.id.btnObservaciones)
+
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         btnAsistenciaManual = findViewById(R.id.btnAsistenciaManual)
 
@@ -87,7 +96,7 @@ class ListaGrupoActivity : AppCompatActivity() {
         }
 
         toolbar.setNavigationOnClickListener {
-            mostrarDialogoSalida()
+            finish()
         }
     }
 
@@ -100,8 +109,13 @@ class ListaGrupoActivity : AppCompatActivity() {
             descargarLista()
         }
 
-        btnVolver.setOnClickListener {
-            finish()
+        btnObservaciones.setOnClickListener {
+            Log.d("OBS_DEBUG", "🔹 En ListaGrupoActivity: idClase=$idClase, idProfesor=$idProfesor")
+            val intent = Intent(this, ObservacionesActivity::class.java)
+            intent.putExtra("id_clase", idClase)
+            intent.putExtra("nombre_grupo", "Grupo $idClase")
+            intent.putExtra("id_profesor", idProfesor)  // ✅ ENVIAR ID PROFESOR A OBSERVACIONES
+            startActivity(intent)
         }
 
         swipeRefreshLayout.setOnRefreshListener {
@@ -294,22 +308,9 @@ class ListaGrupoActivity : AppCompatActivity() {
 
     @Suppress("MissingSuperCall")
     override fun onBackPressed() {
-        mostrarDialogoSalida()
+        finish()
     }
 
-    private fun mostrarDialogoSalida() {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
-        builder.setTitle("Confirmar salida")
-        builder.setMessage("¿Realmente quieres salir? Se cerrará la sesión del docente.")
-        builder.setPositiveButton("Sí") { _, _ ->
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
-        }
-        builder.setNegativeButton("Cancelar", null)
-        builder.show()
-    }
 }
 
 fun AlumnoAdapter.hasUpdateMethod(): Boolean {
