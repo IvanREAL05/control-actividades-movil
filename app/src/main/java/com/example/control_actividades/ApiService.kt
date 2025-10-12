@@ -198,8 +198,14 @@ interface ApiService {
         @Path("idClase") idClase: Int
     ): Response<ResponseBody>
 
+    @GET("api/actividades/actividades/{id}")
+    suspend fun getActividadPorId(@Path("id") actividadId: Int): Actividad
 
 
+    @GET("api/observaciones/grupo/{idGrupo}")
+    suspend fun obtenerObservacionesPorGrupo(
+        @Path("idGrupo") idGrupo: Int
+    ): Response<ObservacionResponse>
 
 
 }

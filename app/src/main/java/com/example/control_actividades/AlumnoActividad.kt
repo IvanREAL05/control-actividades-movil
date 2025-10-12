@@ -37,7 +37,7 @@ data class AlumnoActividad(
     val fechaRegistro: String?,
 
     @SerializedName("calificacion")
-    val calificacion: Float?,
+    var  calificacion: Int?,
 
     @SerializedName("id_actividad_estudiante")
     val idActividadEstudiante: Int?

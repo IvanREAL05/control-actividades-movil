@@ -138,5 +138,6 @@
 
     <color name="blue">#2341E6</color>
     <color name="colorPrimaryLight">#FFBB86FC</color> <!-- O el valor que quieras -->
+    <color name="teal_700">#00796B</color>
 
 </resources>

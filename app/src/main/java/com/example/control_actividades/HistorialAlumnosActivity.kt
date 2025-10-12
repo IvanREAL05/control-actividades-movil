@@ -16,9 +16,10 @@ import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
+
 class HistorialAlumnosActivity : AppCompatActivity() {
 
-    // Views basadas en tu XML real
+    // Views basadas en el nuevo XML
     private lateinit var toolbar: Toolbar
     private lateinit var tvContadorAlumnos: TextView
     private lateinit var tvPromedioGeneral: TextView
@@ -72,6 +73,7 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.title = "" // Título vacío porque ya está en el header
 
         toolbar.setNavigationOnClickListener {
             onBackPressed()
@@ -80,7 +82,7 @@ class HistorialAlumnosActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         recyclerViewHistorial.layoutManager = LinearLayoutManager(this)
-        recyclerViewHistorial.setHasFixedSize(true)
+        recyclerViewHistorial.setHasFixedSize(false)
     }
 
     private fun setupFAB() {
@@ -99,7 +101,7 @@ class HistorialAlumnosActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // 🔹 Llamada suspend (ya no usamos enqueue)
+                // Llamada suspend
                 val response = RetrofitClient.instance.getHistorialAlumnos(idClase)
 
                 // Guardamos la respuesta
@@ -109,6 +111,7 @@ class HistorialAlumnosActivity : AppCompatActivity() {
                 mostrarHistorial()
 
             } catch (e: Exception) {
+                Log.e("HistorialAlumnos", "Error al cargar historial", e)
                 mostrarError("Error al cargar el historial: ${e.message}")
             } finally {
                 // Ocultar loading al terminar
@@ -118,7 +121,6 @@ class HistorialAlumnosActivity : AppCompatActivity() {
     }
 
     private fun mostrarHistorial() {
-
         val alumnos = historialResponse.historial
 
         if (alumnos.isEmpty()) {
@@ -153,34 +155,35 @@ class HistorialAlumnosActivity : AppCompatActivity() {
 
     private fun actualizarEstadisticas(alumnos: List<AlumnoHistorialCompleto>) {
         // Contador de alumnos
-        tvContadorAlumnos.text = "${alumnos.size} alumno${if (alumnos.size != 1) "s" else ""}"
+        tvContadorAlumnos.text = alumnos.size.toString()
 
         // Total de actividades
         tvActividadesTotales.text = historialResponse.total_actividades.toString()
 
+        // ✅ VERSIÓN VIEJA: Escala 0-100 con enteros
         val promedioGeneral = if (alumnos.isNotEmpty()) {
-            val sumaPuntosObtenidos = alumnos.sumOf { it.puntosObtenidos.toDouble() } // asegurar Double
-            val sumaPuntosTotales = alumnos.sumOf { it.puntosTotales.toDouble() }
+            val sumaPuntosObtenidos = alumnos.sumOf { it.puntosObtenidos }
+            val sumaPuntosTotales = alumnos.sumOf { it.puntosTotales }
             if (sumaPuntosTotales > 0) {
-                // Escala 0-10
-                (sumaPuntosObtenidos / sumaPuntosTotales * 10 * 10).roundToInt() / 10.0
-            } else 0.0
-        } else 0.0
+                (sumaPuntosObtenidos * 100) / sumaPuntosTotales
+            } else 0
+        } else 0
 
         tvPromedioGeneral.text = promedioGeneral.toString()
 
-        // Tasa de entrega (actividades entregadas)
-        val totalEntregas = alumnos.sumOf { it.actividadesEntregadas } // Usa la propiedad del modelo
-        val totalPosibles = alumnos.sumOf { it.totalActividades } // Usa la propiedad del modelo
+        // ✅ Tasa de entrega (versión vieja)
+        val totalEntregas = alumnos.sumOf { it.actividadesEntregadas }
+        val totalPosibles = alumnos.sumOf { it.totalActividades }
         val tasaEntrega = if (totalPosibles > 0) {
-            (totalEntregas.toFloat() / totalPosibles * 100).roundToInt()
+            (totalEntregas * 100) / totalPosibles
         } else 0
+
         tvTasaEntrega.text = "$tasaEntrega%"
     }
 
     private fun actualizarEstadisticasVacias() {
-        tvContadorAlumnos.text = "0 alumnos"
-        tvPromedioGeneral.text = "0.0"
+        tvContadorAlumnos.text = "0"
+        tvPromedioGeneral.text = "0"
         tvActividadesTotales.text = historialResponse.total_actividades.toString()
         tvTasaEntrega.text = "0%"
     }
@@ -193,7 +196,6 @@ class HistorialAlumnosActivity : AppCompatActivity() {
             putExtra("ALUMNO_ID", alumno.id_estudiante)
             putExtra("ALUMNO_NOMBRE", "${alumno.nombre} ${alumno.apellido}")
             putExtra("CLASE_ID", idClase)
-            // Pasar más datos si es necesario
             putExtra("MATRICULA", alumno.matricula)
             putExtra("GRUPO", alumno.grupo)
         }
@@ -201,33 +203,39 @@ class HistorialAlumnosActivity : AppCompatActivity() {
     }
 
     private fun exportarHistorial() {
-        // Implementar exportación a Excel
         try {
-            // Aquí puedes implementar tu lógica de exportación
-            // Por ejemplo, usando Apache POI o similar
-
             val fileName = "historial_clase_${idClase}_${System.currentTimeMillis()}.xlsx"
 
-            // Simular exportación exitosa
-            Toast.makeText(this, "Funcionalidad de exportar en desarrollo", Toast.LENGTH_LONG).show()
+            // Mensaje temporal
+            Toast.makeText(this, "Exportando historial...\n$fileName", Toast.LENGTH_LONG).show()
 
-            // TODO: Implementar exportación real
+            // TODO: Implementar exportación real con Apache POI o similar
             /*
             val excelExporter = ExcelExporter()
-            val success = excelExporter.exportarHistorialAlumnos(
+            val file = excelExporter.exportarHistorialAlumnos(
                 context = this,
                 historial = historialResponse,
                 fileName = fileName
             )
 
-            if (success) {
-                Toast.makeText(this, "Historial exportado: $fileName", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(this, "Error al exportar el historial", Toast.LENGTH_SHORT).show()
+            if (file != null) {
+                // Compartir o abrir el archivo
+                val uri = FileProvider.getUriForFile(
+                    this,
+                    "${packageName}.provider",
+                    file
+                )
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/vnd.ms-excel"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(Intent.createChooser(shareIntent, "Compartir historial"))
             }
             */
         } catch (e: Exception) {
-            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e("HistorialAlumnos", "Error al exportar", e)
+            Toast.makeText(this, "Error al exportar: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -236,8 +244,12 @@ class HistorialAlumnosActivity : AppCompatActivity() {
             recyclerViewHistorial.visibility = View.GONE
             cardNoAlumnos.visibility = View.GONE
             fabExportar.visibility = View.GONE
-            // Aquí podrías mostrar un ProgressBar si lo tienes en el XML
-            // progressBar.visibility = View.VISIBLE
+
+            // Si tienes un ProgressBar en el XML, muéstralo aquí
+            // progressBar?.visibility = View.VISIBLE
+
+            // Mensaje temporal
+            Toast.makeText(this, "Cargando historial...", Toast.LENGTH_SHORT).show()
         }
         // El contenido se mostrará en mostrarHistorial()
     }
@@ -250,9 +262,6 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         recyclerViewHistorial.visibility = View.GONE
         fabExportar.visibility = View.GONE
 
-        // Actualizar el mensaje de error en la card
-        // Nota: Tendrías que tener un TextView específico para errores
-        // o modificar el texto existente
         actualizarEstadisticasVacias()
     }
 

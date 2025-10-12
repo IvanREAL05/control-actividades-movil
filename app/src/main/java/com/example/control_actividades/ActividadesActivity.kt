@@ -21,8 +21,6 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.zxing.integration.android.IntentIntegrator
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import android.content.Context
 import android.net.Uri
@@ -31,15 +29,17 @@ import android.provider.MediaStore
 import android.widget.TextView
 import okhttp3.ResponseBody
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.Locale
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.button.MaterialButton
 import android.widget.EditText
 import android.text.InputType
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import android.media.MediaScannerConnection
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.FileOutputStream
+
 
 class ActividadesActivity : AppCompatActivity() {
 
@@ -626,7 +626,6 @@ class ActividadesActivity : AppCompatActivity() {
                     guardarExcelEnDescargas(response.body()!!)
                 } else {
                     Log.e("ExcelDownload", "Error al descargar Excel: ${response.code()} - ${response.message()}")
-                    ocultarProgreso()
                     Toast.makeText(
                         this@ActividadesActivity,
                         "❌ Error al descargar Excel (${response.code()})",
@@ -636,78 +635,141 @@ class ActividadesActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 Log.e("ExcelDownload", "Error de conexión al descargar Excel", e)
-                ocultarProgreso()
                 Toast.makeText(
                     this@ActividadesActivity,
                     "❌ Error de red: ${e.message}",
                     Toast.LENGTH_SHORT
                 ).show()
             } finally {
-                // Restaurar estado del botón aunque haya error
+                // Restaurar estado del botón
                 btnDescargarExcel.isEnabled = true
                 btnDescargarExcel.text = "📊 Descargar Excel"
             }
         }
     }
 
+    private fun guardarExcelEnDescargas(responseBody: ResponseBody) {
+        // IMPORTANTE: Mover operación de I/O a un dispatcher IO
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Obtener nombre del archivo desde el header o usar uno por defecto
+                val contentDisposition = responseBody.contentType()?.toString() ?: ""
+                val fileName = "Reporte_Actividades_${System.currentTimeMillis()}.xlsx"
 
-    private fun guardarExcelEnDescargas(body: ResponseBody) {
-        try {
-            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val fileName = "Reporte_Actividades_Clase_${idClase}_${timestamp}.xlsx"
-            val resolver = applicationContext.contentResolver
+                // Para Android 10+ (API 29+)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    val contentValues = ContentValues().apply {
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                        put(MediaStore.MediaColumns.MIME_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                    }
 
-            val contentValues = ContentValues().apply {
-                put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-                put(
-                    MediaStore.Downloads.MIME_TYPE,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-                put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                    val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+
+                    uri?.let {
+                        contentResolver.openOutputStream(it)?.use { outputStream ->
+                            responseBody.byteStream().use { inputStream ->
+                                inputStream.copyTo(outputStream)
+                            }
+                        }
+
+                        Log.d("ExcelDownload", "Archivo guardado exitosamente: $fileName")
+
+                        // Volver al hilo principal para UI
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@ActividadesActivity,
+                                "✅ Excel descargado en Descargas",
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                            // Abrir el archivo automáticamente
+                            abrirArchivoExcel(uri)
+                        }
+                    } ?: run {
+                        Log.e("ExcelDownload", "Error al crear URI para guardar archivo")
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@ActividadesActivity, "❌ Error al guardar archivo", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                } else {
+                    // Para Android 9 y anteriores
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val file = File(downloadsDir, fileName)
+
+                    FileOutputStream(file).use { outputStream ->
+                        responseBody.byteStream().use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+
+                    Log.d("ExcelDownload", "Archivo guardado: ${file.absolutePath}")
+
+                    // Volver al hilo principal para UI
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@ActividadesActivity,
+                            "✅ Excel descargado en Descargas",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
+                    // Notificar al sistema sobre el nuevo archivo
+                    MediaScannerConnection.scanFile(
+                        this@ActividadesActivity,
+                        arrayOf(file.absolutePath),
+                        arrayOf("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+                        null
+                    )
+
+                    // Abrir el archivo
+                    withContext(Dispatchers.Main) {
+                        abrirArchivoExcel(Uri.fromFile(file))
+                    }
+                }
+
+            } catch (e: Exception) {
+                Log.e("ExcelDownload", "Error al guardar Excel", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@ActividadesActivity,
+                        "❌ Error al guardar archivo: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
-
-            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-            } else {
-                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                if (!downloadsDir.exists()) {
-                    downloadsDir.mkdirs()
-                }
-                val file = File(downloadsDir, fileName)
-                Uri.fromFile(file)
-            }
-
-            uri?.let { fileUri ->
-                resolver.openOutputStream(fileUri)?.use { outputStream ->
-                    outputStream.write(body.bytes())
-                }
-
-                ocultarProgreso()
-                Log.d("ExcelDownload", "Excel guardado exitosamente: $fileName")
-                Toast.makeText(this, "✅ Excel guardado en Descargas", Toast.LENGTH_LONG).show()
-
-                // Intentar abrir el archivo automáticamente
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(fileUri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
-                try {
-                    startActivity(Intent.createChooser(intent, "Abrir Excel con:"))
-                } catch (e: Exception) {
-                    Log.d("ExcelDownload", "No hay app para abrir Excel, solo guardado")
-                    Toast.makeText(this, "ℹ️ Archivo guardado. Búscalo en Descargas", Toast.LENGTH_SHORT).show()
-                }
-            } ?: run {
-                throw Exception("No se pudo crear el URI para guardar el archivo")
-            }
-
-        } catch (e: Exception) {
-            Log.e("ExcelDownload", "Error guardando Excel", e)
-            ocultarProgreso()
-            Toast.makeText(this, "❌ Error al guardar Excel: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
+
+    private fun abrirArchivoExcel(uri: Uri) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+
+            // Verificar si hay una app que pueda abrir Excel
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            } else {
+                Toast.makeText(
+                    this,
+                    "No hay aplicación para abrir archivos Excel",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } catch (e: Exception) {
+            Log.e("ExcelDownload", "Error al abrir archivo", e)
+            Toast.makeText(
+                this,
+                "Archivo descargado, ábrelo desde la carpeta Descargas",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
 
     private fun ocultarProgreso() {
         btnDescargarExcel.isEnabled = true
@@ -744,108 +806,155 @@ class ActividadesActivity : AppCompatActivity() {
     }
 
     private fun iniciarDescargaExcelGeneral() {
-        // Iniciamos una coroutine en el lifecycleScope
-        lifecycleScope.launch {
-            btnDescargarExcel2.isEnabled = false
-            btnDescargarExcel2.text = "📊 Descargando Excel..."
+        // IMPORTANTE: Usar Dispatchers.IO desde el inicio
+        lifecycleScope.launch(Dispatchers.IO) {
+            withContext(Dispatchers.Main) {
+                btnDescargarExcel2.isEnabled = false
+                btnDescargarExcel2.text = "📊 Descargando Excel..."
+            }
 
             Log.d("ExcelDownload", "Iniciando descarga de reporte general: $idClase")
 
             try {
-                // Llamada suspend
                 val response = RetrofitClient.instance.descargarReporteClaseCompleto(idClase)
 
                 if (response.isSuccessful && response.body() != null) {
                     Log.d("ExcelDownload", "Descarga exitosa, guardando archivo...")
                     guardarExcelGeneralEnDescargas(response.body()!!)
-                    Toast.makeText(
-                        this@ActividadesActivity,
-                        "✅ Descarga completada",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@ActividadesActivity,
+                            "✅ Descarga completada",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 } else {
                     val code = response.code()
                     val msg = response.message()
                     Log.e("ExcelDownload", "Error al descargar Excel: $code -> $msg")
-                    Toast.makeText(
-                        this@ActividadesActivity,
-                        "❌ Error al descargar Excel ($code)",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@ActividadesActivity,
+                            "❌ Error al descargar Excel ($code)",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
 
             } catch (e: Exception) {
                 Log.e("ExcelDownload", "Error de conexión al descargar Excel", e)
-                Toast.makeText(
-                    this@ActividadesActivity,
-                    "❌ Error de red: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@ActividadesActivity,
+                        "❌ Error de red: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             } finally {
-                btnDescargarExcel2.isEnabled = true
-                btnDescargarExcel2.text = "📥 Descargar Excel"
+                withContext(Dispatchers.Main) {
+                    btnDescargarExcel2.isEnabled = true
+                    btnDescargarExcel2.text = "📥 Descargar Excel"
+                }
             }
         }
     }
 
 
-    private fun guardarExcelGeneralEnDescargas(body: ResponseBody) {
-        try {
-            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val fileName = "Reporte_Actividades_Clase_${idClase}_${timestamp}.xlsx"
-            val resolver = applicationContext.contentResolver
+    private fun guardarExcelGeneralEnDescargas(responseBody: ResponseBody) {
+        // IMPORTANTE: Mover operación de I/O a un dispatcher IO
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Nombre del archivo con timestamp
+                val fileName = "ClaseCompleto_${System.currentTimeMillis()}.xlsx"
 
-            val contentValues = ContentValues().apply {
-                put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-                put(
-                    MediaStore.Downloads.MIME_TYPE,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-                put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                // Para Android 10+ (API 29+)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    val contentValues = ContentValues().apply {
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                        put(MediaStore.MediaColumns.MIME_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                    }
+
+                    val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+
+                    uri?.let {
+                        contentResolver.openOutputStream(it)?.use { outputStream ->
+                            responseBody.byteStream().use { inputStream ->
+                                inputStream.copyTo(outputStream)
+                            }
+                        }
+
+                        Log.d("ExcelDownload", "Archivo guardado exitosamente: $fileName")
+
+                        // Volver al hilo principal para UI
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@ActividadesActivity,
+                                "✅ Excel completo descargado en Descargas",
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                            // Abrir el archivo automáticamente
+                            abrirArchivoExcel(uri)
+                        }
+                    } ?: run {
+                        Log.e("ExcelDownload", "Error al crear URI para guardar archivo")
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@ActividadesActivity, "❌ Error al guardar archivo", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                } else {
+                    // Para Android 9 y anteriores
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val file = File(downloadsDir, fileName)
+
+                    FileOutputStream(file).use { outputStream ->
+                        responseBody.byteStream().use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+
+                    Log.d("ExcelDownload", "Archivo guardado: ${file.absolutePath}")
+
+                    // Volver al hilo principal para UI
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@ActividadesActivity,
+                            "✅ Excel completo descargado en Descargas",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
+                    // Notificar al sistema sobre el nuevo archivo
+                    MediaScannerConnection.scanFile(
+                        this@ActividadesActivity,
+                        arrayOf(file.absolutePath),
+                        arrayOf("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+                        null
+                    )
+
+                    // Abrir el archivo
+                    withContext(Dispatchers.Main) {
+                        abrirArchivoExcel(Uri.fromFile(file))
+                    }
+                }
+
+            } catch (e: Exception) {
+                Log.e("ExcelDownload", "Error al guardar Excel general", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@ActividadesActivity,
+                        "❌ Error al guardar archivo: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
-
-            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-            } else {
-                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                if (!downloadsDir.exists()) {
-                    downloadsDir.mkdirs()
-                }
-                val file = File(downloadsDir, fileName)
-                Uri.fromFile(file)
-            }
-
-            uri?.let { fileUri ->
-                resolver.openOutputStream(fileUri)?.use { outputStream ->
-                    outputStream.write(body.bytes())
-                }
-
-                ocultarProgreso()
-                Log.d("ExcelDownload", "Excel guardado exitosamente: $fileName")
-                Toast.makeText(this, "✅ Excel guardado en Descargas", Toast.LENGTH_LONG).show()
-
-                // Intentar abrir el archivo automáticamente
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(fileUri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
-                try {
-                    startActivity(Intent.createChooser(intent, "Abrir Excel con:"))
-                } catch (e: Exception) {
-                    Log.d("ExcelDownload", "No hay app para abrir Excel, solo guardado")
-                    Toast.makeText(this, "ℹ️ Archivo guardado. Búscalo en Descargas", Toast.LENGTH_SHORT).show()
-                }
-            } ?: run {
-                throw Exception("No se pudo crear el URI para guardar el archivo")
-            }
-
-        } catch (e: Exception) {
-            Log.e("ExcelDownload", "Error guardando Excel", e)
-            ocultarProgreso()
-            Toast.makeText(this, "❌ Error al guardar Excel: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
+
+
+
 
 
 }

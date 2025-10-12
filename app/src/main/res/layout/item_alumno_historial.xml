@@ -5,9 +5,11 @@
     android:id="@+id/cardAlumno"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="3dp"
+    app:strokeWidth="0dp"
     app:cardBackgroundColor="@android:color/white"
     android:clickable="true"
     android:focusable="true"
@@ -18,147 +20,273 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- 🔥 HEADER DEL ALUMNO - SIEMPRE VISIBLE -->
+        <!-- HEADER DEL ALUMNO -->
         <LinearLayout
             android:id="@+id/layoutHeader"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:gravity="center_vertical"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
 
-            <!-- Avatar del alumno -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
-                android:layout_marginEnd="12dp">
-
-                <TextView
-                    android:id="@+id/tvIniciales"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="AA"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/white"
-                    android:background="@color/blue1"
-                    android:gravity="center" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Información principal -->
+            <!-- Fila principal con avatar e info -->
             <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="0dp"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1">
+                android:padding="16dp"
+                android:gravity="center_vertical">
 
-                <TextView
-                    android:id="@+id/tvNombreAlumnoHistorial"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Nombre del Alumno"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorPrimaryDark"
-                    android:ellipsize="end"
-                    android:maxLines="1" />
-
-                <TextView
-                    android:id="@+id/tvProgresoActividades"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="📚 2/5 actividades • 🏆 85.5 pts promedio"
-                    android:textSize="13sp"
-                    android:textColor="#666666"
-                    android:layout_marginTop="2dp" />
-            </LinearLayout>
-
-            <!-- Indicadores visuales -->
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_marginStart="8dp">
-
-                <!-- Calificación promedio -->
-                <TextView
-                    android:id="@+id/tvPromedioCalif"
+                <!-- Avatar con badge de estado -->
+                <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="8.5"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#4CAF50"
-                    android:background="@drawable/circle_background_light"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp"
-                    android:minWidth="36dp"
-                    android:gravity="center" />
+                    android:layout_marginEnd="16dp">
 
-                <!-- Icono de expansión -->
-                <ImageView
-                    android:id="@+id/ivExpandir"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_expand_more"
-                    android:layout_marginTop="4dp"
-                    app:tint="#999999"
-                    android:contentDescription="Expandir detalles" />
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        app:cardCornerRadius="28dp"
+                        app:cardElevation="4dp"
+                        app:strokeWidth="3dp"
+                        app:strokeColor="#E3F2FD">
+
+                        <TextView
+                            android:id="@+id/tvIniciales"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:text="AA"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="@android:color/white"
+                            android:background="@drawable/gradient_avatar_bg"
+                            android:gravity="center" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Badge de estado -->
+                    <TextView
+                        android:id="@+id/tvEstadoIndicador"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:text="⭐"
+                        android:textSize="10sp"
+                        android:layout_gravity="bottom|end"
+                        android:background="@drawable/circle_badge_bg"
+                        android:gravity="center"
+                        android:visibility="gone" />
+                </FrameLayout>
+
+                <!-- Información del alumno -->
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:id="@+id/tvNombreAlumnoHistorial"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Nombre del Alumno"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A237E"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:letterSpacing="0.01" />
+
+                    <TextView
+                        android:id="@+id/tvProgresoActividades"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="2 de 5 actividades completadas"
+                        android:textSize="13sp"
+                        android:textColor="#757575"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <!-- Calificación y expansión -->
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginStart="12dp">
+
+                    <!-- Badge de calificación -->
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_grade_bg"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvPromedioCalif"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="8.5"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#4CAF50" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Promedio"
+                            android:textSize="9sp"
+                            android:textColor="#81C784"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.05" />
+                    </LinearLayout>
+
+                    <!-- Icono de expansión -->
+                    <ImageView
+                        android:id="@+id/ivExpandir"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_expand_more"
+                        android:layout_marginTop="8dp"
+                        app:tint="#BDBDBD"
+                        android:background="@drawable/circle_ripple_bg"
+                        android:padding="4dp"
+                        android:contentDescription="Expandir detalles" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Barra de progreso visual -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="12dp">
+
+                <!-- Indicadores rápidos -->
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp">
+
+                    <!-- Chip 1 - Porcentaje de avance -->
+                    <TextView
+                        android:id="@+id/tvChipPorcentaje"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📚 0%"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="#2196F3"
+                        android:background="@drawable/chip_blue_bg"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:layout_marginEnd="6dp" />
+
+                    <!-- Chip 2 -->
+                    <TextView
+                        android:id="@+id/tvTotalPuntos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🏆 170/200 pts"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF9800"
+                        android:background="@drawable/chip_orange_bg"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                </LinearLayout>
+
+                <!-- Barra de progreso -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/progress_bar_background" />
+
+                    <View
+                        android:id="@+id/viewProgreso"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/progress_bar_fill" />
+                </FrameLayout>
             </LinearLayout>
         </LinearLayout>
 
-        <!-- 🔥 SECCIÓN EXPANDIBLE - DETALLES DE ACTIVIDADES -->
+        <!-- SECCIÓN EXPANDIBLE - DETALLES -->
         <LinearLayout
             android:id="@+id/layoutDetallesExpandible"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            android:animateLayoutChanges="true">
+            android:animateLayoutChanges="true"
+            android:background="#FAFAFA">
 
-            <!-- Divisor -->
+            <!-- Divisor decorativo -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#E0E0E0"
-                android:layout_marginHorizontal="16dp" />
+                android:background="@drawable/gradient_divider" />
 
-            <!-- Header de actividades -->
+            <!-- Header de actividades mejorado -->
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="8dp"
+                android:paddingBottom="12dp"
+                android:background="#F5F5F5"
                 android:gravity="center_vertical">
 
-                <TextView
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="📋 Actividades Entregadas"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorPrimaryDark" />
+                    android:gravity="center_vertical">
 
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="20dp"
+                        android:background="@drawable/accent_bar"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Actividades Entregadas"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A237E" />
+                </LinearLayout>
+
+                <!-- Contador -->
                 <TextView
-                    android:id="@+id/tvTotalPuntos"
+                    android:id="@+id/tvEntregadas"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Total: 170/200 pts"
-                    android:textSize="12sp"
+                    android:text="2"
+                    android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textColor="#FF9800"
-                    android:background="@drawable/rounded_background_orange"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp" />
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/circle_count_bg"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:minWidth="28dp"
+                    android:gravity="center" />
             </LinearLayout>
 
             <!-- Lista de actividades -->
@@ -167,90 +295,91 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="16dp"
-                android:paddingBottom="8dp"
+                android:paddingVertical="8dp"
+                android:clipToPadding="false"
                 android:nestedScrollingEnabled="false" />
 
-            <!-- Resumen final -->
+            <!-- Footer con resumen y acción -->
             <LinearLayout
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:paddingTop="8dp"
-                android:background="#F8F9FA"
-                android:gravity="center_vertical">
+                android:background="@drawable/footer_gradient_bg">
 
+                <!-- Divisor sutil -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:layout_marginHorizontal="16dp" />
+
+                <!-- Contenido del footer -->
                 <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="0dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1">
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📊 Resumen Académico"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:textColor="#666666" />
-
+                    <!-- Resumen -->
                     <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp">
+                        android:layout_weight="1">
 
-                        <TextView
-                            android:id="@+id/tvEntregadas"
+                        <LinearLayout
+                            android:orientation="horizontal"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="✅ 2 entregadas"
-                            android:textSize="11sp"
-                            android:textColor="#4CAF50"
-                            android:layout_marginEnd="8dp" />
+                            android:layout_height="wrap_content">
 
-                        <TextView
-                            android:id="@+id/tvPendientes"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="⏳ 3 pendientes"
-                            android:textSize="11sp"
-                            android:textColor="#FF9800" />
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="⏳ Pendientes"
+                                    android:textSize="11sp"
+                                    android:textColor="#FFA726"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvPendientes"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="3 actividades"
+                                    android:textSize="10sp"
+                                    android:textColor="#FFB74D"
+                                    android:layout_marginTop="2dp" />
+                            </LinearLayout>
+                        </LinearLayout>
                     </LinearLayout>
+
+                    <!-- Botón de acción -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnVerDetalles"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Ver detalles completos"
+                        android:textSize="12sp"
+                        android:textAllCaps="false"
+                        android:textStyle="bold"
+                        app:cornerRadius="20dp"
+                        app:icon="@drawable/ic_arrow_forward"
+                        app:iconGravity="end"
+                        app:iconSize="16dp"
+                        app:iconTint="@android:color/white"
+                        android:backgroundTint="#2196F3"
+                        android:textColor="@android:color/white"
+                        android:paddingHorizontal="16dp"
+                        app:elevation="2dp"
+                        style="@style/Widget.MaterialComponents.Button" />
                 </LinearLayout>
-
-                <!-- Botón ver más detalles -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnVerDetalles"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:text="Ver más"
-                    android:textSize="11sp"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    app:cornerRadius="16dp"
-                    android:backgroundTint="@color/blue2"
-                    android:textColor="@android:color/white"
-                    android:paddingHorizontal="12dp"
-                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
             </LinearLayout>
-
         </LinearLayout>
-
     </LinearLayout>
-
-    <!-- 🔥 INDICADOR DE ESTADO EN ESQUINA -->
-    <TextView
-        android:id="@+id/tvEstadoIndicador"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="⭐"
-        android:textSize="12sp"
-        android:layout_gravity="top|end"
-        android:layout_margin="8dp"
-        android:background="@drawable/circle_background_small"
-        android:textColor="@android:color/white"
-        android:padding="4dp"
-        android:visibility="gone" />
 
 </com.google.android.material.card.MaterialCardView>

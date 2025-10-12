@@ -203,6 +203,7 @@ class HorarioDocenteActivity : AppCompatActivity() {
             putExtra("hora_inicio", clase.hora_inicio)
             putExtra("hora_fin", clase.hora_fin)
             putExtra("nombre_profesor", clase.nombre_profesor) // ✅ Agregado
+            putExtra("id_grupo", clase.id_grupo)
         }
         setResult(RESULT_OK, resultIntent)
         finish()

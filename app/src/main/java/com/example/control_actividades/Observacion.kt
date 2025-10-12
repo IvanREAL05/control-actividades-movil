@@ -16,7 +16,8 @@ data class ObservacionResponse(
     val success: Boolean,
     val mensaje: String? = null,
     val observacion: Observacion? = null,
-    val observaciones: List<Observacion>? = null
+    val observaciones: List<Observacion>? = null,
+    val total_observaciones: Int
 )
 
 data class CrearActualizarObservacionRequest(

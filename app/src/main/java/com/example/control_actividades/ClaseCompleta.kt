@@ -8,6 +8,7 @@ data class ClaseCompleta(
     val materia: String,
     val materia_clave: String,
     val grupo: String,
+    val id_grupo: Int?,
     val turno: String,
     val nivel: String,
     val hora_inicio: String,

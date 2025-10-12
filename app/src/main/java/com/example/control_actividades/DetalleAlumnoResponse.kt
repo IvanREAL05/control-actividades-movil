@@ -30,11 +30,12 @@ data class ClaseDetalle(
 
 data class ActividadDetalle(
     @SerializedName("id_actividad") val id_actividad: Int,
-    val titulo: String,
-    val descripcion: String?,
+    @SerializedName("titulo") val titulo: String,
+    @SerializedName("descripcion") val descripcion: String?,
+    @SerializedName("tipo_actividad") val tipo_actividad: String?,
     @SerializedName("fecha_entrega") val fecha_entrega: String?,
     @SerializedName("valor_maximo") val valor_maximo: Int,
-    val estado: String?,
+    @SerializedName("estado") val estado: String?,
     @SerializedName("fecha_entrega_real") val fecha_entrega_real: String?,
-    val calificacion: Double? // <-- CORREGIDO
+    @SerializedName("calificacion") val calificacion: Int?
 )

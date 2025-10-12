@@ -67,8 +67,6 @@ class DetalleAlumnoActivity : AppCompatActivity() {
         recyclerActividades = findViewById(R.id.recyclerActividades)
         cardResumen = findViewById(R.id.cardResumen)
         tvAvatar = findViewById(R.id.tvAvatar)
-
-
     }
 
     private fun setupToolbar() {
@@ -97,42 +95,48 @@ class DetalleAlumnoActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 Log.e("DetalleAlumno", "Error al cargar datos", e)
-                Toast.makeText(this@DetalleAlumnoActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@DetalleAlumnoActivity,
+                    "Error: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
 
     private fun mostrarInformacionBasica(detalle: DetalleAlumnoResponse) {
         val alumno = detalle.alumno
-        val clase = detalle.clase
         val actividades = detalle.actividades
-        val alumnoLetras = detalle.alumno
 
+        // Datos básicos
         tvNombreCompleto.text = "${alumno.nombre ?: ""} ${alumno.apellido ?: ""}"
         tvMatricula.text = "Matrícula: ${alumno.matricula ?: "N/A"}"
         tvGrupo.text = "Grupo: ${alumno.grupo ?: "N/A"}"
         tvCorreo.text = alumno.correo ?: "Correo no disponible"
 
-        // Resumen de actividades
+        // Avatar
         val iniciales = (alumno.nombre?.firstOrNull()?.uppercase() ?: "") +
                 (alumno.apellido?.firstOrNull()?.uppercase() ?: "")
         tvAvatar.text = iniciales
+
+        // ✅ VERSIÓN VIEJA: Cálculos simples
         val entregadas = actividades.count { it.estado == "entregado" }
         val total = actividades.size
-        val puntosObtenidos = actividades.sumOf { it.calificacion?.toDouble() ?: 0.0 }
-        val puntosTotales = actividades.sumOf { it.valor_maximo.toDouble() }
+        val puntosObtenidos = actividades.sumOf { it.calificacion ?: 0 }
+        val puntosTotales = actividades.sumOf { it.valor_maximo }
 
-        // Calcular promedio de calificaciones
-        val calificaciones = actividades.mapNotNull { it.calificacion }
+        // ✅ Promedio escala 0-100 (enteros)
         val promedio = if (puntosTotales > 0) {
-            (puntosObtenidos / puntosTotales * 10)
-        } else 0.0
+            (puntosObtenidos * 100) / puntosTotales
+        } else 0
 
-        tvPromedioGeneral.text = String.format("%.2f", promedio)
+        tvPromedioGeneral.text = promedio.toString()
         tvActividadesEntregadas.text = "$entregadas de $total"
         tvPuntosTotales.text = "$puntosObtenidos/$puntosTotales pts"
 
-        val tasaEntrega = if (total > 0) (entregadas * 100 / total) else 0
+        val tasaEntrega = if (total > 0) {
+            (entregadas * 100) / total
+        } else 0
         tvTasaEntrega.text = "$tasaEntrega%"
     }
 

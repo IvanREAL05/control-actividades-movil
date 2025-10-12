@@ -14,19 +14,21 @@ import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import android.text.SpannableStringBuilder
 import androidx.appcompat.app.AlertDialog
-import android.graphics.Color
 import android.text.style.BackgroundColorSpan
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import android.view.View
 
 class DocenteHomeActivity : AppCompatActivity() {
 
     private lateinit var tvInfoClase: TextView
     private lateinit var tvActividadesRecientes: TextView
+    private lateinit var tvObservaciones: TextView  // 🆕 Para mostrar observaciones
+
     private var idProfesor: Int = -1
-    private var idClaseActual: Int = -1  // Para clase activa del backend
-    private var idClaseSeleccionada: Int = -1  // Para clase seleccionada manualmente
-    private var claseSeleccionadaInfo: ClaseInfo? = null  // Info de la clase seleccionada
+    private var idClaseActual: Int = -1
+    private var idClaseSeleccionada: Int = -1
+    private var claseSeleccionadaInfo: ClaseInfo? = null
 
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private val refreshIntervalMillis = 60_000L // 1 minuto
@@ -39,7 +41,6 @@ class DocenteHomeActivity : AppCompatActivity() {
         }
     }
 
-    // Variable para almacenar la acción pendiente
     private var accionPendiente: ((Int) -> Unit)? = null
 
     companion object {
@@ -53,6 +54,7 @@ class DocenteHomeActivity : AppCompatActivity() {
         // Inicializar vistas
         tvInfoClase = findViewById(R.id.tvInfoClase)
         tvActividadesRecientes = findViewById(R.id.tvActividadesRecientes)
+        tvObservaciones = findViewById(R.id.tvObservaciones)
 
         // Recuperar id del profesor
         val sharedPref = getSharedPreferences("docentePrefs", MODE_PRIVATE)
@@ -82,25 +84,15 @@ class DocenteHomeActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Configura la visibilidad de botones para usuarios especiales
-     */
     private fun configurarBotonesEspeciales() {
-        val idUsuarioEspecial = 5 // usuario especial
-
-        // Deshabilitar justificantes
         val btnRegistrarJustificante = findViewById<Button>(R.id.btnRegistrarJustificante)
         btnRegistrarJustificante.isEnabled = false
         btnRegistrarJustificante.alpha = 0.5f
     }
 
-    /**
-     * Configura todos los listeners de los botones
-     */
     private fun configurarListeners() {
-        // BOTÓN PRINCIPAL: Registrar Actividad
+        // Botón principal
         findViewById<Button>(R.id.btnRegistrarActividad).setOnClickListener {
-            Log.d("ID_CLASE_DEBUG", "Botón principal: Registrar Actividad presionado")
             manejarAccionClase { idClase ->
                 val intent = Intent(this, ActividadesActivity::class.java)
                 intent.putExtra("id_clase", idClase)
@@ -108,11 +100,8 @@ class DocenteHomeActivity : AppCompatActivity() {
             }
         }
 
-        // BOTONES SECUNDARIOS
         findViewById<Button>(R.id.btnRegistrarAsistencia).setOnClickListener {
-            Log.d("ID_CLASE_DEBUG", "Estado antes de abrir escáner: activa=$idClaseActual, seleccionada=$idClaseSeleccionada")
             manejarAccionClase { idClase ->
-                Log.d("ID_CLASE_DEBUG", "Enviando al escáner ID: $idClase")
                 val intent = Intent(this, EscanerQRActivity::class.java)
                 intent.putExtra("id_clase", idClase)
                 startActivity(intent)
@@ -129,7 +118,6 @@ class DocenteHomeActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnVerLista).setOnClickListener {
             manejarAccionClase { idClase ->
-                Log.d("ID_DEBUG", "🔸 Enviando desde DocenteHome: idClase=$idClase, idProfesor=$idProfesor")
                 val intent = Intent(this, ListaGrupoActivity::class.java)
                 intent.putExtra("id_clase", idClase)
                 intent.putExtra("id_profesor", idProfesor)
@@ -139,10 +127,6 @@ class DocenteHomeActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnVerEstadisticas).setOnClickListener {
             manejarAccionClase { idClase ->
-                Log.d("DocenteHome", "Enviando a EstadisticasGrupoActivity:")
-                Log.d("DocenteHome", "  - id_clase: $idClase")
-                Log.d("DocenteHome", "  - id_profesor: $idProfesor")
-
                 val intent = Intent(this, EstadisticasGrupoActivity::class.java)
                 intent.putExtra("id_clase", idClase)
                 intent.putExtra("id_profesor", idProfesor)
@@ -150,21 +134,15 @@ class DocenteHomeActivity : AppCompatActivity() {
             }
         }
 
-        // Botón para cambiar bitácora manualmente
         findViewById<Button>(R.id.btnBitacora).setOnClickListener {
-            // Mostrar opciones si hay tanto clase activa como seleccionada
             if (idClaseActual != -1 && idClaseSeleccionada != -1) {
                 mostrarOpcionesBitacora()
             } else {
-                // Ir directamente a HorarioDocenteActivity
                 abrirHorarioParaSeleccion(null)
             }
         }
     }
 
-    /**
-     * Muestra opciones cuando hay clase activa Y seleccionada manualmente
-     */
     private fun mostrarOpcionesBitacora() {
         AlertDialog.Builder(this)
             .setTitle("Gestión de Bitácora")
@@ -181,46 +159,28 @@ class DocenteHomeActivity : AppCompatActivity() {
             .show()
     }
 
-    /**
-     * Abre HorarioDocenteActivity para seleccionar clase
-     */
     private fun abrirHorarioParaSeleccion(accion: ((Int) -> Unit)?) {
         val intent = Intent(this, HorarioDocenteActivity::class.java)
         intent.putExtra("id_profesor", idProfesor)
-
-        // Guardar la acción pendiente si existe
         accionPendiente = accion
-
         startActivityForResult(intent, REQUEST_SELECCION_CLASE)
     }
 
-    /**
-     * Maneja el resultado de la selección de clase desde HorarioDocenteActivity
-     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_SELECCION_CLASE && resultCode == RESULT_OK) {
-            // Usar el nombre correcto del extra que envía HorarioDocenteActivity
             val idClase = data?.getIntExtra("id_clase_seleccionada", -1) ?: -1
 
             if (idClase != -1) {
-                // Crear ClaseInfo desde los extras recibidos
                 val claseInfo = crearClaseInfoDesdeExtras(data)
-
-                // Actualizar selección manual
                 idClaseSeleccionada = idClase
                 claseSeleccionadaInfo = claseInfo
 
-                Log.d("ID_CLASE_DEBUG", "Clase seleccionada desde HorarioActivity: ID=$idClase")
-                Log.d("ID_CLASE_DEBUG", "Clase: ${claseInfo?.materia} - ${claseInfo?.grupo}")
-
-                // Actualizar UI
                 actualizarInfoClaseSeleccionada()
                 actualizarEstadoBotones()
                 obtenerActividadesRecientes()
 
-                // Ejecutar acción pendiente si existe
                 accionPendiente?.let { accion ->
                     accion(idClase)
                     accionPendiente = null
@@ -234,12 +194,9 @@ class DocenteHomeActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Crea un objeto ClaseInfo desde los extras del Intent
-     */
     private fun crearClaseInfoDesdeExtras(data: Intent?): ClaseInfo? {
         if (data == null) return null
-
+        Log.d("DocenteHome", "📦 ID_GRUPO RECIBIDO: ${data.getIntExtra("id_grupo", -1)}")
         return try {
             ClaseInfo(
                 id_clase = data.getIntExtra("id_clase_seleccionada", -1),
@@ -254,51 +211,26 @@ class DocenteHomeActivity : AppCompatActivity() {
                 hora_inicio = data.getStringExtra("hora_inicio"),
                 hora_fin = data.getStringExtra("hora_fin"),
                 dia = data.getStringExtra("dia"),
-                nombre_profesor = data.getStringExtra("nombre_profesor")
+                nombre_profesor = data.getStringExtra("nombre_profesor"),
+                id_grupo = data.getIntExtra("id_grupo", -1)
             )
         } catch (e: Exception) {
-            Log.e("ID_CLASE_DEBUG", "Error creando ClaseInfo: ${e.message}")
+            Log.e("DocenteHome", "Error creando ClaseInfo: ${e.message}")
             null
         }
     }
 
-    /**
-     * LÓGICA PRINCIPAL: Maneja acciones que requieren una clase
-     * Prioridad: 1) Manual 2) Activa 3) Seleccionar nueva
-     */
     private fun manejarAccionClase(accion: (Int) -> Unit) {
-        Log.d("ID_CLASE_DEBUG", "=== INICIANDO MANEJO DE ACCIÓN ===")
-        Log.d("ID_CLASE_DEBUG", "idClaseActual: $idClaseActual")
-        Log.d("ID_CLASE_DEBUG", "idClaseSeleccionada: $idClaseSeleccionada")
-
         when {
-            // PRIORIDAD 1: Si hay selección manual, SIEMPRE usarla
-            idClaseSeleccionada != -1 -> {
-                Log.d("ID_CLASE_DEBUG", "✅ USANDO clase seleccionada manualmente: $idClaseSeleccionada")
-                accion(idClaseSeleccionada)
-            }
-            // PRIORIDAD 2: Si NO hay manual pero SÍ hay activa, usar la activa
-            idClaseActual != -1 -> {
-                Log.d("ID_CLASE_DEBUG", "✅ USANDO clase activa (no hay manual): $idClaseActual")
-                accion(idClaseActual)
-            }
-            // PRIORIDAD 3: Si no hay ninguna, ir a HorarioDocenteActivity
-            else -> {
-                Log.d("ID_CLASE_DEBUG", "❌ NO hay clases disponibles, abriendo HorarioDocenteActivity")
-                abrirHorarioParaSeleccion(accion)
-            }
+            idClaseSeleccionada != -1 -> accion(idClaseSeleccionada)
+            idClaseActual != -1 -> accion(idClaseActual)
+            else -> abrirHorarioParaSeleccion(accion)
         }
     }
 
-    /**
-     * Limpia la selección manual y vuelve a usar clase activa
-     */
     private fun limpiarSeleccionManual() {
-        Log.d("ID_CLASE_DEBUG", "Limpiando selección manual...")
         idClaseSeleccionada = -1
         claseSeleccionadaInfo = null
-
-        // Refrescar información
         obtenerClaseActual()
         obtenerActividadesRecientes()
         actualizarEstadoBotones()
@@ -310,9 +242,6 @@ class DocenteHomeActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Obtiene y muestra las actividades recientes de la clase en uso
-     */
     private fun obtenerActividadesRecientes() {
         val idClase = if (idClaseSeleccionada != -1) idClaseSeleccionada else idClaseActual
 
@@ -328,13 +257,12 @@ class DocenteHomeActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body() != null) {
                     val actividades = response.body()!!
                     if (actividades.isNotEmpty()) {
-                        tvActividadesRecientes.text = "Última actividad: ${actividades[0].titulo} (hace poco)"
+                        tvActividadesRecientes.text = "Última actividad: ${actividades[0].titulo}"
                     } else {
                         tvActividadesRecientes.text = "No hay actividades registradas hoy"
                     }
                 } else {
                     tvActividadesRecientes.text = "Error al cargar actividades recientes"
-                    Log.e("DocenteHome", "Error API: ${response.code()}")
                 }
 
             } catch (e: Exception) {
@@ -344,16 +272,12 @@ class DocenteHomeActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Actualiza el estado del botón "Cambiar Bitácora"
-     */
     private fun actualizarEstadoBotones() {
         val btnElegirClase = findViewById<Button>(R.id.btnBitacora)
         btnElegirClase.isEnabled = true
         btnElegirClase.alpha = 1.0f
 
         when {
-            // Hay selección manual (con o sin clase activa)
             idClaseSeleccionada != -1 -> {
                 if (idClaseActual != -1) {
                     btnElegirClase.text = "📆 Cambiar Bitácora (Manual activa)"
@@ -361,42 +285,33 @@ class DocenteHomeActivity : AppCompatActivity() {
                     btnElegirClase.text = "📆 Cambiar Bitácora (Manual)"
                 }
             }
-            // Solo hay clase activa
             idClaseActual != -1 -> {
                 btnElegirClase.text = "📆 Elegir Otra Bitácora"
             }
-            // No hay ninguna clase
             else -> {
                 btnElegirClase.text = "📆 Elegir Bitácora"
             }
         }
     }
 
-    /**
-     * Actualiza la UI cuando se selecciona una clase manualmente
-     */
+    // 🆕 Actualiza la UI con información de clase seleccionada manualmente
     private fun actualizarInfoClaseSeleccionada() {
         claseSeleccionadaInfo?.let { clase ->
             val builder = SpannableStringBuilder()
 
-            // Materia y grupo como título principal
-            val tituloStart = builder.length
-            builder.append("${clase.materia} - ${clase.grupo}\n")
+            // Nombre profesor en negrita
+            val profesorStart = builder.length
+            builder.append("Profesor: ${clase.nombre_profesor ?: "N/A"}\n")
             builder.setSpan(
                 StyleSpan(android.graphics.Typeface.BOLD),
-                tituloStart,
-                builder.length - 1,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            builder.setSpan(
-                ForegroundColorSpan(Color.parseColor("#1976D2")),
-                tituloStart,
-                builder.length - 1,
+                profesorStart,
+                builder.length,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
 
-            builder.append("Profesor: ${clase.nombre_profesor ?: "N/A"}\n")
+            builder.append("Materia: ${clase.materia ?: "N/A"}\n")
             builder.append("NRC: ${clase.nrc ?: "N/A"}\n")
+            builder.append("Grupo: ${clase.grupo ?: "N/A"}\n")
 
             if (clase.hora_inicio != null && clase.hora_fin != null) {
                 val horarioStart = builder.length
@@ -447,33 +362,61 @@ class DocenteHomeActivity : AppCompatActivity() {
             )
 
             tvInfoClase.text = builder
+
+            // Obtener observaciones del grupo
+            clase.id_grupo?.let { idGrupo ->
+                obtenerObservacionesGrupo(idGrupo)
+            } ?: run {
+                tvObservaciones.visibility = View.GONE
+            }
         }
     }
 
-    /**
-     * Obtiene la clase actual sin afectar selección manual
-     */
+    // 🆕 Obtiene y muestra observaciones del grupo
+    private fun obtenerObservacionesGrupo(idGrupo: Int) {
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.instance.obtenerObservacionesPorGrupo(idGrupo)
+
+                if (response.isSuccessful && response.body() != null) {
+                    val observaciones = response.body()!!
+                    if (observaciones.total_observaciones > 0) {
+                        tvObservaciones.visibility = View.VISIBLE
+                        tvObservaciones.text = "⚠️ ${observaciones.total_observaciones} observación${if (observaciones.total_observaciones > 1) "es" else ""}"
+                    } else {
+                        tvObservaciones.visibility = View.GONE
+                    }
+                } else {
+                    tvObservaciones.visibility = View.GONE
+                }
+            } catch (e: Exception) {
+                tvObservaciones.visibility = View.GONE
+                Log.e("DocenteHome", "Error al obtener observaciones", e)
+            }
+        }
+    }
+
+    // 🆕 Obtiene clase actual del backend
     private fun obtenerClaseActual() {
         lifecycleScope.launch {
             try {
                 val response = RetrofitClient.instance.getClaseActual(idProfesor)
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    val claseData = body?.data
-                    val clase = claseData?.clase_actual
 
-                    if (clase != null) {
-                        Log.d("ID_CLASE_DEBUG", "Clase activa detectada: ${clase.id_clase}")
-                        idClaseActual = clase.id_clase
+                if (response.isSuccessful && response.body() != null) {
+                    val claseResponse = response.body()!!
+                    val claseActual = claseResponse.data.clase_actual
+
+                    if (claseActual != null) {
+                        idClaseActual = claseActual.id_clase
 
                         // Solo actualizar UI si NO hay selección manual
                         if (idClaseSeleccionada == -1) {
-                            mostrarInfoClaseActiva(claseData, clase)
+                            mostrarInfoClaseActiva(claseResponse)
                         }
                     } else {
                         idClaseActual = -1
                         if (idClaseSeleccionada == -1) {
-                            mostrarSinClase(claseData)
+                            mostrarSinClase(claseResponse)
                         }
                     }
 
@@ -481,7 +424,7 @@ class DocenteHomeActivity : AppCompatActivity() {
                 } else {
                     idClaseActual = -1
                     if (idClaseSeleccionada == -1) {
-                        tvInfoClase.text = "Sin clase actual\nSelecciona una clase para comenzar"
+                        tvInfoClase.text = "Sin clase actual"
                     }
                     actualizarEstadoBotones()
                 }
@@ -489,27 +432,60 @@ class DocenteHomeActivity : AppCompatActivity() {
                 idClaseActual = -1
                 actualizarEstadoBotones()
                 if (idClaseSeleccionada == -1) {
-                    Toast.makeText(this@DocenteHomeActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     Log.e("DocenteHome", "Error al obtener clase actual", e)
                 }
             }
         }
     }
 
-    /**
-     * Muestra información de clase activa
-     */
-    private fun mostrarInfoClaseActiva(claseData: Any?, clase: Any?) {
+    // 🆕 Muestra información de clase activa
+    private fun mostrarInfoClaseActiva(response: ClaseActualResponse) {
+        val data = response.data
+        val clase = data.clase_actual
+
         val builder = SpannableStringBuilder()
 
-        // Aquí necesitarás adaptar según tu estructura de datos
-        // Ejemplo genérico:
-        builder.append("Clase activa detectada\n")
+        // Profesor (usa el del nivel data)
+        val profesorStart = builder.length
+        builder.append("Profesor: ${data.nombre_profesor ?: "N/A"}\n")
+        builder.setSpan(
+            StyleSpan(android.graphics.Typeface.BOLD),
+            profesorStart,
+            builder.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
 
+        // Datos de la clase (dentro de clase_actual)
+        builder.append("Materia: ${clase?.materia ?: clase?.nombre_clase ?: "N/A"}\n")
+        builder.append("NRC: ${clase?.nrc ?: "N/A"}\n")
+        builder.append("Grupo: ${clase?.grupo ?: "N/A"}\n")
+        builder.append("Aula: ${clase?.aula ?: "N/A"}\n")
+
+        if (clase?.hora_inicio != null && clase.hora_fin != null) {
+            val horarioStart = builder.length
+            builder.append("Horario: ${clase.hora_inicio} - ${clase.hora_fin}\n")
+            val guinda = android.graphics.Color.parseColor("#800000")
+            builder.setSpan(
+                ForegroundColorSpan(guinda),
+                horarioStart,
+                builder.length - 1,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            builder.setSpan(
+                StyleSpan(android.graphics.Typeface.BOLD),
+                horarioStart,
+                builder.length - 1,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        } else {
+            builder.append("Horario: No disponible\n")
+        }
+
+        // Indicador de clase activa
         val activaStart = builder.length
         builder.append("🟢 CLASE ACTIVA")
         builder.setSpan(
-            BackgroundColorSpan(android.graphics.Color.parseColor("#4CAF50")),
+            BackgroundColorSpan(android.graphics.Color.parseColor("#195e1b")),
             activaStart,
             builder.length,
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -528,16 +504,33 @@ class DocenteHomeActivity : AppCompatActivity() {
         )
 
         tvInfoClase.text = builder
+
+        // Observaciones (solo si existe id_grupo)
+        clase?.id_grupo?.let { idGrupo ->
+            obtenerObservacionesGrupo(idGrupo)
+        } ?: run {
+            tvObservaciones.visibility = View.GONE
+        }
     }
 
-    /**
-     * Muestra información cuando no hay clase
-     */
-    private fun mostrarSinClase(claseData: Any?) {
+    // 🆕 Muestra información cuando no hay clase
+    private fun mostrarSinClase(claseResponse: ClaseActualResponse?) {
         val builder = SpannableStringBuilder()
+
+        val profesorStart = builder.length
+        builder.append("Profesor: ${claseResponse?.data?.nombre_profesor ?: "N/A"}\n")
+        builder.setSpan(
+            StyleSpan(android.graphics.Typeface.BOLD),
+            profesorStart,
+            builder.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
         builder.append("Sin clase actual\n")
-        builder.append("Selecciona una clase para comenzar a registrar actividades")
+        builder.append("Selecciona una clase para comenzar")
+
         tvInfoClase.text = builder
+        tvObservaciones.visibility = View.GONE
     }
 
     override fun onDestroy() {
@@ -556,23 +549,19 @@ class DocenteHomeActivity : AppCompatActivity() {
     }
 
     private fun mostrarDialogoConfirmacionSalir() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("¿Salir?")
-        builder.setMessage("¿Estás seguro de que deseas cerrar sesión?")
+        AlertDialog.Builder(this)
+            .setTitle("¿Salir?")
+            .setMessage("¿Estás seguro de que deseas cerrar sesión?")
+            .setPositiveButton("Sí") { _, _ ->
+                val prefs = getSharedPreferences("docentePrefs", MODE_PRIVATE)
+                prefs.edit().clear().apply()
 
-        builder.setPositiveButton("Sí") { _, _ ->
-            val prefs = getSharedPreferences("docentePrefs", MODE_PRIVATE)
-            prefs.edit().clear().apply()
-
-            Log.d("DocenteHome", "Sesión cerrada por usuario")
-
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
-        }
-
-        builder.setNegativeButton("Cancelar") { dialog, _ -> dialog.dismiss() }
-        builder.show()
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+            .setNegativeButton("Cancelar") { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 }

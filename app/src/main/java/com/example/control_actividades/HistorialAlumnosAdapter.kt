@@ -11,9 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import kotlin.math.roundToInt
 import android.graphics.Color
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 
 class HistorialAlumnosAdapter(
     private val alumnos: List<AlumnoHistorialCompleto>,
@@ -34,6 +31,11 @@ class HistorialAlumnosAdapter(
         private val tvProgreso: TextView = itemView.findViewById(R.id.tvProgresoActividades)
         private val tvPromedioCalif: TextView = itemView.findViewById(R.id.tvPromedioCalif)
         private val ivExpandir: ImageView = itemView.findViewById(R.id.ivExpandir)
+        private val tvEstadoIndicador: TextView = itemView.findViewById(R.id.tvEstadoIndicador)
+
+        // 🔥 NUEVOS VIEWS - Chips y barra de progreso
+        private val tvChipPorcentaje: TextView? = itemView.findViewById(R.id.tvChipPorcentaje)
+        private val viewProgreso: View = itemView.findViewById(R.id.viewProgreso)
 
         // Views de la sección expandible
         private val layoutDetalles: View = itemView.findViewById(R.id.layoutDetallesExpandible)
@@ -67,54 +69,82 @@ class HistorialAlumnosAdapter(
         }
 
         private fun configurarHeader(alumno: AlumnoHistorialCompleto) {
-            // Iniciales del alumno
+            // Iniciales
             val iniciales = "${alumno.nombre.firstOrNull() ?: ""}${alumno.apellido.firstOrNull() ?: ""}".uppercase()
             tvIniciales.text = iniciales
 
             // Nombre completo
-            // Nombre completo con apellido resaltado en naranja
             val nombreCompleto = "${alumno.apellido} ${alumno.nombre}"
-            val spannable = SpannableString(nombreCompleto)
-            spannable.setSpan(
-                ForegroundColorSpan(Color.parseColor("#FFA500")), // Naranja
-                0,
-                alumno.apellido.length,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            tvNombreAlumno.text = spannable
+            tvNombreAlumno.text = nombreCompleto
 
-            // Progreso básico
-            tvProgreso.text = "📚 ${alumno.actividadesEntregadas}/${alumno.totalActividades} actividades • 🏆 ${alumno.puntosObtenidos} pts"
+            // ✅ VERSIÓN VIEJA: Progreso simple
+            tvProgreso.text = "${alumno.actividadesEntregadas} de ${alumno.totalActividades} actividades"
 
-            // Calificación promedio (escala 0-10)
+            // ✅ VERSIÓN VIEJA: Promedio escala 0-100 (enteros)
             val promedio = if (alumno.puntosTotales > 0) {
-                ((alumno.puntosObtenidos.toFloat() / alumno.puntosTotales) * 10 * 10).roundToInt() / 10.0
-            } else 0.0
+                (alumno.puntosObtenidos * 100) / alumno.puntosTotales
+            } else 0
 
             tvPromedioCalif.text = promedio.toString()
 
-            // Color de la calificación según el rendimiento
+            // Color según rendimiento
             val colorCalif = when {
-                promedio >= 9.0 -> android.graphics.Color.parseColor("#4CAF50") // Verde
-                promedio >= 7.0 -> android.graphics.Color.parseColor("#FF9800") // Naranja
-                else -> android.graphics.Color.parseColor("#F44336") // Rojo
+                promedio >= 90 -> Color.parseColor("#4CAF50") // Verde
+                promedio >= 70 -> Color.parseColor("#FF9800") // Naranja
+                else -> Color.parseColor("#F44336") // Rojo
             }
             tvPromedioCalif.setTextColor(colorCalif)
+
+            // ✅ Porcentaje de progreso (versión vieja)
+            val porcentajeProgreso = if (alumno.totalActividades > 0) {
+                (alumno.actividadesEntregadas * 100) / alumno.totalActividades
+            } else 0
+
+            tvChipPorcentaje?.text = "📚 $porcentajeProgreso%"
+
+            // Animación de barra (si existe)
+            viewProgreso?.let { barra ->
+                val layoutParams = barra.layoutParams
+                layoutParams.width = 0
+                barra.layoutParams = layoutParams
+
+                barra.post {
+                    val parentWidth = (barra.parent as? View)?.width ?: itemView.width
+                    val targetWidth = (parentWidth * porcentajeProgreso / 100)
+                    val animator = ObjectAnimator.ofInt(targetWidth)
+                    animator.duration = 500
+                    animator.addUpdateListener {
+                        layoutParams.width = it.animatedValue as Int
+                        barra.layoutParams = layoutParams
+                    }
+                    animator.start()
+                }
+            }
+
+            // Badge de estrella
+            tvEstadoIndicador?.let {
+                if (promedio >= 90) {
+                    it.visibility = View.VISIBLE
+                    it.text = "⭐"
+                } else {
+                    it.visibility = View.GONE
+                }
+            }
         }
 
         private fun configurarSeccionExpandible(alumno: AlumnoHistorialCompleto) {
-            // Total de puntos
-            tvTotalPuntos.text = "Total: ${alumno.puntosObtenidos}/${alumno.puntosTotales} pts"
+            // ✅ VERSIÓN VIEJA: Total de puntos
+            tvTotalPuntos.text = "🏆 ${alumno.puntosObtenidos}/${alumno.puntosTotales} pts"
 
-            // Configurar RecyclerView de actividades
+            // RecyclerView de actividades
             recyclerActividades.layoutManager = LinearLayoutManager(itemView.context)
             val actividadesAdapter = ActividadesAlumnoAdapter(alumno.actividades)
             recyclerActividades.adapter = actividadesAdapter
 
-            // Estadísticas
+            // ✅ VERSIÓN VIEJA: Estadísticas
             val pendientes = alumno.totalActividades - alumno.actividadesEntregadas
-            tvEntregadas.text = "✅ ${alumno.actividadesEntregadas} entregadas"
-            tvPendientes.text = "⏳ $pendientes pendientes"
+            tvEntregadas.text = alumno.actividadesEntregadas.toString()
+            tvPendientes.text = "$pendientes actividades"
         }
 
         private fun toggleExpansion(position: Int) {
@@ -135,7 +165,7 @@ class HistorialAlumnosAdapter(
 
         private fun rotateIcon(imageView: ImageView, fromDegrees: Float, toDegrees: Float) {
             val rotateAnimator = ObjectAnimator.ofFloat(imageView, "rotation", fromDegrees, toDegrees)
-            rotateAnimator.duration = 200
+            rotateAnimator.duration = 300
             rotateAnimator.start()
         }
     }
@@ -166,20 +196,26 @@ class ActividadesAlumnoAdapter(
         fun bind(actividad: ActividadDetalle) {
             tvTituloActividad.text = actividad.titulo
 
-            // Estado con emoji y color
-            when (actividad.estado) {
+            // ✅ VERSIÓN VIEJA: Estados simples
+            when (actividad.estado?.lowercase()) {
                 "entregado" -> {
-                    tvEstadoActividad.text = "✅ Entregado"
-                    tvEstadoActividad.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
                     val puntos = actividad.calificacion ?: 0
+                    tvEstadoActividad.text = "✅ Entregado"
+                    tvEstadoActividad.setTextColor(Color.parseColor("#4CAF50"))
                     tvPuntosActividad.text = "$puntos/${actividad.valor_maximo} pts"
-                    tvPuntosActividad.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
+                    tvPuntosActividad.setTextColor(Color.parseColor("#4CAF50"))
+                }
+                "pendiente" -> {
+                    tvEstadoActividad.text = "⏳ Pendiente"
+                    tvEstadoActividad.setTextColor(Color.parseColor("#FFC107"))
+                    tvPuntosActividad.text = "0/${actividad.valor_maximo} pts"
+                    tvPuntosActividad.setTextColor(Color.parseColor("#999999"))
                 }
                 else -> {
-                    tvEstadoActividad.text = "⏳ Pendiente"
-                    tvEstadoActividad.setTextColor(android.graphics.Color.parseColor("#FF9800"))
+                    tvEstadoActividad.text = "❌ No entregado"
+                    tvEstadoActividad.setTextColor(Color.parseColor("#F44336"))
                     tvPuntosActividad.text = "0/${actividad.valor_maximo} pts"
-                    tvPuntosActividad.setTextColor(android.graphics.Color.parseColor("#666666"))
+                    tvPuntosActividad.setTextColor(Color.parseColor("#999999"))
                 }
             }
         }

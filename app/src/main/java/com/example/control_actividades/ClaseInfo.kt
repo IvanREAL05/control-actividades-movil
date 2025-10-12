@@ -13,5 +13,6 @@ data class ClaseInfo(
     val hora_inicio: String?,
     val hora_fin: String?,
     val dia: String?,
-    val nombre_profesor: String?
+    val nombre_profesor: String?,
+    val id_grupo: Int? = null
 )

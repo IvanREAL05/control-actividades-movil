@@ -19,21 +19,22 @@ data class AlumnoHistorialCompleto(
     @SerializedName("grupo") val grupo: String?,
     @SerializedName("actividades") val actividades: List<ActividadDetalle>,
     @SerializedName("entregado") val entregado: Int,
-    @SerializedName("ponderacion") val ponderacion: Double
+    @SerializedName("ponderacion") val ponderacion: Int
 ) {
-    // Campos derivados
+    // ✅ VERSIÓN VIEJA - Sin cambios
     val actividadesEntregadas: Int
         get() = actividades.count { it.estado == "entregado" }
 
     val totalActividades: Int
         get() = actividades.size
 
-    val puntosObtenidos: Double
-        get() = actividades.sumOf { (it.calificacion ?: 0).toDouble() }
+    val puntosObtenidos: Int
+        get() = actividades.sumOf { it.calificacion ?: 0 }
 
-    val puntosTotales: Double
-        get() = actividades.sumOf { it.valor_maximo.toDouble() }
+    val puntosTotales: Int
+        get() = actividades.sumOf { it.valor_maximo }
 }
+
 
 data class ActividadEntregada(
     val id_actividad: Int,

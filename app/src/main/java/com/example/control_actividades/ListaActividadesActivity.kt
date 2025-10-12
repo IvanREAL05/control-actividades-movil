@@ -37,20 +37,20 @@ class ListaActividadesActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
     private lateinit var btnDescargarExcel: Button
     private lateinit var progressBarDescarga: ProgressBar
-
+    private lateinit var actividad: Actividad
 
     private var actividadId: Int = -1
     private var actividadTitulo: String = ""
     private var alumnosCompletos: MutableList<AlumnoActividad> = mutableListOf()
     private var tipoDescarga: String? = null
 
-
     companion object {
         const val EXTRA_ACTIVIDAD_ID = "actividad_id"
         const val EXTRA_ACTIVIDAD_TITULO = "actividad_titulo"
+        const val EXTRA_TIPO_ACTIVIDAD = "tipo_actividad"
+        const val EXTRA_VALOR_MAXIMO = "valor_maximo"
     }
 
-    // Launcher para permisos de almacenamiento
     private val requestStoragePermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -77,10 +77,13 @@ class ListaActividadesActivity : AppCompatActivity() {
             return
         }
 
+        // 🔹 PRIMERO: Obtener la actividad completa desde el backend
         configurarToolbar(actividadTitulo)
         inicializarVistas()
         configurarRetrofit()
-        cargarListaAlumnos(actividadId)
+
+        // Cargar datos de la actividad antes de cargar alumnos
+        cargarDatosActividad()
     }
 
     private fun configurarToolbar(titulo: String) {
@@ -96,16 +99,64 @@ class ListaActividadesActivity : AppCompatActivity() {
         btnDescargarExcel = findViewById(R.id.btnDescargarExcel)
         progressBarDescarga = findViewById(R.id.progressBarDescarga)
 
-        // Configurar botón de descarga
         btnDescargarExcel.setOnClickListener {
             tipoDescarga = "CSV"
             verificarPermisosYDescargar()
         }
-
     }
 
     private fun configurarRetrofit() {
         apiService = RetrofitClient.instance
+    }
+
+    // 🔹 NUEVO: Método para cargar datos de la actividad
+    private fun cargarDatosActividad() {
+        Log.d("ListaActividades", "📥 Cargando datos de actividad ID: $actividadId")
+
+        lifecycleScope.launch {
+            try {
+                // 🔹 Asume que tienes un endpoint para obtener una actividad por ID
+                // Si no lo tienes, debes crearlo o pasar los datos desde el Intent
+                val actividadResponse = apiService.getActividadPorId(actividadId)
+
+                actividad = actividadResponse
+
+                Log.d("ListaActividades", "✅ Actividad cargada:")
+                Log.d("ListaActividades", "   Tipo: ${actividad.tipo_actividad}")
+                Log.d("ListaActividades", "   Valor máximo: ${actividad.valor_maximo}")
+
+                // Ahora sí, cargar la lista de alumnos
+                cargarListaAlumnos(actividadId)
+
+            } catch (e: Exception) {
+                Log.e("ListaActividades", "❌ Error al cargar datos de actividad", e)
+
+                // 🔹 ALTERNATIVA: Si el endpoint no existe, obtener del Intent
+                val tipoActividad = intent.getStringExtra(EXTRA_TIPO_ACTIVIDAD) ?: "tarea"
+                val valorMaximo = intent.getIntExtra(EXTRA_VALOR_MAXIMO, 10)
+
+                actividad = Actividad(
+                    id_actividad = actividadId,
+                    id_clase = 0,
+                    titulo = actividadTitulo,
+                    descripcion = null,
+                    fecha_entrega = "",
+                    hora_entrega = null,
+                    fecha_creacion = "",
+                    estado = null,
+                    fecha_entrega_real = null,
+                    vigencia = null,
+                    valor_maximo = valorMaximo,
+                    tipo_actividad = tipoActividad
+                )
+
+                Log.d("ListaActividades", "⚠️ Usando datos del Intent:")
+                Log.d("ListaActividades", "   Tipo: ${actividad.tipo_actividad}")
+                Log.d("ListaActividades", "   Valor máximo: ${actividad.valor_maximo}")
+
+                cargarListaAlumnos(actividadId)
+            }
+        }
     }
 
     private fun verificarPermisosYDescargar() {
@@ -134,7 +185,7 @@ class ListaActividadesActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val archivoUri = generarArchivoCSV() // 🔹 ahora devuelve Uri?
+                val archivoUri = generarArchivoCSV()
 
                 withContext(Dispatchers.Main) {
                     ocultarProgreso()
@@ -145,7 +196,6 @@ class ListaActividadesActivity : AppCompatActivity() {
                             Toast.LENGTH_LONG
                         ).show()
 
-                        // 🔹 Opción: abrir CSV inmediatamente
                         val intent = Intent(Intent.ACTION_VIEW).apply {
                             setDataAndType(archivoUri, "text/csv")
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -159,7 +209,6 @@ class ListaActividadesActivity : AppCompatActivity() {
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-
                     } else {
                         Toast.makeText(
                             this@ListaActividadesActivity,
@@ -185,11 +234,8 @@ class ListaActividadesActivity : AppCompatActivity() {
     private fun generarArchivoCSV(): Uri? {
         return try {
             val csvContent = StringBuilder()
+            csvContent.append("No.,Nombre,Apellido,Matrícula,Estado,Calificación,Fecha\n")
 
-            // Encabezados
-            csvContent.append("No.,Nombre,Apellido,Matrícula,Estado,Fecha\n")
-
-            // Datos
             val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
             alumnosCompletos.forEachIndexed { index, alumno ->
                 csvContent.append("${index + 1},")
@@ -197,10 +243,10 @@ class ListaActividadesActivity : AppCompatActivity() {
                 csvContent.append("\"${alumno.apellido ?: ""}\",")
                 csvContent.append("\"${alumno.matricula ?: "N/A"}\",")
                 csvContent.append("\"${alumno.estado}\",")
-                csvContent.append("\"${dateFormat.format(Date())}\"\n")
+                csvContent.append("\"${alumno.calificacion ?: "N/A"}\",")
+                csvContent.append("\"${alumno.fechaEntregaReal ?: dateFormat.format(Date())}\"\n")
             }
 
-            // MediaStore para guardar en Descargas
             val resolver = applicationContext.contentResolver
             val fileName = "Lista_${actividadTitulo.replace(" ", "_")}_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.csv"
 
@@ -213,11 +259,11 @@ class ListaActividadesActivity : AppCompatActivity() {
             val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
             } else {
-                // En Android 8 y 9 guardamos con ruta directa (requiere WRITE_EXTERNAL_STORAGE)
                 val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 val file = File(downloadsDir, fileName)
                 Uri.fromFile(file)
             }
+
             uri?.let {
                 resolver.openOutputStream(it)?.use { outputStream ->
                     outputStream.write(csvContent.toString().toByteArray(Charsets.UTF_8))
@@ -241,10 +287,9 @@ class ListaActividadesActivity : AppCompatActivity() {
     private fun cargarListaAlumnos(actividadId: Int) {
         Log.d("ListaActividades", "Cargando alumnos para actividad ID: $actividadId")
 
-        // Lanzar coroutine en el lifecycleScope del Activity
         lifecycleScope.launch {
             try {
-                val alumnos = apiService.getEstudiantes(actividadId) // suspende hasta recibir respuesta
+                val alumnos = apiService.getEstudiantes(actividadId)
 
                 if (alumnos.isEmpty()) {
                     Toast.makeText(
@@ -267,15 +312,39 @@ class ListaActividadesActivity : AppCompatActivity() {
         }
     }
 
-
     private fun mostrarAlumnos(alumnos: MutableList<AlumnoActividad>) {
         alumnosCompletos = alumnos.toMutableList()
         Log.d("ListaActividades", "Lista completa guardada con ${alumnosCompletos.size} elementos")
 
+        // 🔹 Verificar que actividad esté inicializada
+        if (!::actividad.isInitialized) {
+            Log.e("ListaActividades", "❌ Actividad no inicializada, usando valores por defecto")
+            actividad = Actividad(
+                id_actividad = actividadId,
+                id_clase = 0,
+                titulo = actividadTitulo,
+                descripcion = null,
+                fecha_entrega = "",
+                hora_entrega = null,
+                fecha_creacion = "",
+                estado = null,
+                fecha_entrega_real = null,
+                vigencia = null,
+                valor_maximo = 10,
+                tipo_actividad = "tarea"
+            )
+        }
+
+        Log.d("ListaActividades", "🎯 Creando adapter con:")
+        Log.d("ListaActividades", "   Tipo: ${actividad.tipo_actividad}")
+        Log.d("ListaActividades", "   Valor máximo: ${actividad.valor_maximo}")
+
         adapter = AlumnoActividadAdapter(
             alumnos = alumnos.toMutableList(),
             actividadId = actividadId,
-            ApiService = apiService,
+            tipoActividad = actividad.tipo_actividad,
+            calificacionMaxima = actividad.valor_maximo,
+            apiService = apiService,
             onEstadoChanged = { alumno, nuevoEstado ->
                 actualizarEstadoEnListaPrincipal(alumno, nuevoEstado)
             }
@@ -359,6 +428,4 @@ class ListaActividadesActivity : AppCompatActivity() {
             else -> "Lista de Alumnos"
         }
     }
-
-
 }

@@ -4,14 +4,13 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-
-    <!-- Base de descarga -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M5,19h14v2H5z" />
-
-    <!-- Flecha hacia abajo -->
+        android:pathData="M5,20h14v2H5V20z"/>
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M11,3h2v10h3l-4,4l-4,-4h3z" />
+        android:pathData="M11,2h2v12h-2V2z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,16l-5,-5h3V9h4v2h3L12,16z"/>
 </vector>
