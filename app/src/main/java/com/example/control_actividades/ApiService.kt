@@ -207,5 +207,16 @@ interface ApiService {
         @Path("idGrupo") idGrupo: Int
     ): Response<ObservacionResponse>
 
+    @GET("api/reportes/excel/profesor/completo/{idProfesor}")
+    @Streaming
+    suspend fun descargarReporteProfesor(
+        @Path("idProfesor") idProfesor: Int
+    ): Response<ResponseBody>
+
+    @GET("api/reportes/alumnos/clase/{idClase}/excel")
+    @Streaming
+    suspend fun descargarReporteClase(
+        @Path("idClase") idClase: Int
+    ): Response<ResponseBody>
 
 }

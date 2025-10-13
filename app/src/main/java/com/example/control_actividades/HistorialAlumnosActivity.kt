@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlin.math.roundToInt
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -27,7 +26,6 @@ class HistorialAlumnosActivity : AppCompatActivity() {
     private lateinit var tvTasaEntrega: TextView
     private lateinit var cardNoAlumnos: MaterialCardView
     private lateinit var recyclerViewHistorial: RecyclerView
-    private lateinit var fabExportar: FloatingActionButton
 
     // Datos
     private var idClase: Int = -1
@@ -54,7 +52,6 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         initViews()
         setupToolbar()
         setupRecyclerView()
-        setupFAB()
         cargarHistorial()
     }
 
@@ -66,7 +63,6 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         tvTasaEntrega = findViewById(R.id.tvTasaEntrega)
         cardNoAlumnos = findViewById(R.id.cardNoAlumnos)
         recyclerViewHistorial = findViewById(R.id.recyclerViewHistorial)
-        fabExportar = findViewById(R.id.fabExportar)
     }
 
     private fun setupToolbar() {
@@ -85,15 +81,7 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         recyclerViewHistorial.setHasFixedSize(false)
     }
 
-    private fun setupFAB() {
-        fabExportar.setOnClickListener {
-            if (historialResponse.historial.isNotEmpty()) {
-                exportarHistorial()
-            } else {
-                Toast.makeText(this, "No hay datos para exportar", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+
 
     private fun cargarHistorial() {
         // Mostrar loading
@@ -127,7 +115,6 @@ class HistorialAlumnosActivity : AppCompatActivity() {
             // No hay alumnos
             cardNoAlumnos.visibility = View.VISIBLE
             recyclerViewHistorial.visibility = View.GONE
-            fabExportar.visibility = View.GONE
 
             // Actualizar estadísticas con valores por defecto
             actualizarEstadisticasVacias()
@@ -135,7 +122,7 @@ class HistorialAlumnosActivity : AppCompatActivity() {
             // Hay alumnos
             cardNoAlumnos.visibility = View.GONE
             recyclerViewHistorial.visibility = View.VISIBLE
-            fabExportar.visibility = View.VISIBLE
+
 
             // Configurar adapter
             adapter = HistorialAlumnosAdapter(
@@ -202,51 +189,12 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun exportarHistorial() {
-        try {
-            val fileName = "historial_clase_${idClase}_${System.currentTimeMillis()}.xlsx"
-
-            // Mensaje temporal
-            Toast.makeText(this, "Exportando historial...\n$fileName", Toast.LENGTH_LONG).show()
-
-            // TODO: Implementar exportación real con Apache POI o similar
-            /*
-            val excelExporter = ExcelExporter()
-            val file = excelExporter.exportarHistorialAlumnos(
-                context = this,
-                historial = historialResponse,
-                fileName = fileName
-            )
-
-            if (file != null) {
-                // Compartir o abrir el archivo
-                val uri = FileProvider.getUriForFile(
-                    this,
-                    "${packageName}.provider",
-                    file
-                )
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "application/vnd.ms-excel"
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                startActivity(Intent.createChooser(shareIntent, "Compartir historial"))
-            }
-            */
-        } catch (e: Exception) {
-            Log.e("HistorialAlumnos", "Error al exportar", e)
-            Toast.makeText(this, "Error al exportar: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     private fun showLoading(isLoading: Boolean) {
         if (isLoading) {
             recyclerViewHistorial.visibility = View.GONE
             cardNoAlumnos.visibility = View.GONE
-            fabExportar.visibility = View.GONE
 
-            // Si tienes un ProgressBar en el XML, muéstralo aquí
-            // progressBar?.visibility = View.VISIBLE
 
             // Mensaje temporal
             Toast.makeText(this, "Cargando historial...", Toast.LENGTH_SHORT).show()
@@ -260,7 +208,7 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         // Mostrar estado de error
         cardNoAlumnos.visibility = View.VISIBLE
         recyclerViewHistorial.visibility = View.GONE
-        fabExportar.visibility = View.GONE
+
 
         actualizarEstadisticasVacias()
     }

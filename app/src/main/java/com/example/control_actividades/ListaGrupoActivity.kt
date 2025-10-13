@@ -1,7 +1,6 @@
 package com.example.control_actividades
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
@@ -9,8 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.app.DownloadManager
-import android.content.Context
 import android.os.Environment
 import android.view.View
 import android.widget.ProgressBar
@@ -21,6 +18,13 @@ import android.widget.TextView
 import com.google.android.material.button.MaterialButton
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import android.content.ContentValues
+import android.provider.MediaStore
+import android.net.Uri
+
+
 
 class ListaGrupoActivity : AppCompatActivity() {
 
@@ -106,7 +110,7 @@ class ListaGrupoActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         btnDescargar.setOnClickListener {
-            descargarLista()
+            descargarListaClase(idClase)
         }
 
         btnObservaciones.setOnClickListener {
@@ -287,22 +291,80 @@ class ListaGrupoActivity : AppCompatActivity() {
         }
     }
 
-    private fun descargarLista() {
-        val url = "https://control-asistenciav1.onrender.com/api/asistencia/alumnos/clase/$idClase/excel"
+    private fun descargarListaClase(idClase: Int) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    val response = RetrofitClient.instance.descargarReporteClase(idClase)
+                    if (response.isSuccessful && response.body() != null) {
+                        val inputStream = response.body()!!.byteStream()
+                        val fileName = "Reporte_Clase_$idClase.xlsx"
 
-        try {
-            val request = DownloadManager.Request(Uri.parse(url))
-            request.setTitle("Lista de Asistencia")
-            request.setDescription("Descargando archivo Excel...")
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "lista_asistencia_clase_$idClase.xlsx")
+                        // Detectar versión de Android
+                        val isAndroid10OrAbove = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
 
-            val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            manager.enqueue(request)
+                        if (isAndroid10OrAbove) {
+                            // 🟢 Android 10+
+                            val resolver = contentResolver
+                            val contentValues = ContentValues().apply {
+                                put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                                put(MediaStore.Downloads.MIME_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                                put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                                put(MediaStore.Downloads.IS_PENDING, 1)
+                            }
 
-            Toast.makeText(this, "Descarga iniciada...", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(this, "Error al descargar: ${e.message}", Toast.LENGTH_LONG).show()
+                            val uri: Uri? = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                            uri?.let {
+                                resolver.openOutputStream(it)?.use { output ->
+                                    inputStream.copyTo(output)
+                                }
+                                contentValues.clear()
+                                contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+                                resolver.update(it, contentValues, null, null)
+                            }
+                        } else {
+                            // 🔵 Android 9 o inferior
+                            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                            if (!downloadsDir.exists()) downloadsDir.mkdirs()
+                            val file = java.io.File(downloadsDir, fileName)
+                            java.io.FileOutputStream(file).use { output ->
+                                inputStream.copyTo(output)
+                            }
+
+                            // Notificar al sistema para que aparezca en "Descargas"
+                            val uri = android.net.Uri.fromFile(file)
+                            val scanIntent = android.content.Intent(android.content.Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                            scanIntent.data = uri
+                            sendBroadcast(scanIntent)
+                        }
+
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@ListaGrupoActivity,
+                                "Reporte guardado en Descargas: $fileName",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@ListaGrupoActivity,
+                                "Error al descargar el reporte",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@ListaGrupoActivity,
+                            "Ocurrió un error al descargar el archivo",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    Log.e("ListaGrupoActivity", "Error descargando Excel", e)
+                }
+            }
         }
     }
 

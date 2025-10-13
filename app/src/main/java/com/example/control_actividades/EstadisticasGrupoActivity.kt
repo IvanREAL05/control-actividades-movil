@@ -1,7 +1,10 @@
 package com.example.control_actividades
 
+
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +13,13 @@ import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import android.os.Environment
+import java.io.File
+import java.io.FileOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+
 
 class EstadisticasGrupoActivity : AppCompatActivity() {
 
@@ -29,9 +39,11 @@ class EstadisticasGrupoActivity : AppCompatActivity() {
     private lateinit var tvMenosEntregada: TextView
     private lateinit var tvMayorPromedio: TextView
     private lateinit var tvMenorPromedio: TextView
+    private lateinit var btnDescargarLista: Button
 
     // Variables para manejar datos
     private var idClase: Int = -1
+    private var idProfesor: Int = 0
     private lateinit var apiService: ApiService
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +52,7 @@ class EstadisticasGrupoActivity : AppCompatActivity() {
 
         // Obtener el ID de la clase del intent
         idClase = intent.getIntExtra("id_clase", -1)
+        idProfesor = intent.getIntExtra("id_profesor", 0)
         if (idClase == -1) {
             Toast.makeText(this, "Error: ID de clase no válido", Toast.LENGTH_LONG).show()
             finish()
@@ -48,6 +61,22 @@ class EstadisticasGrupoActivity : AppCompatActivity() {
 
         // Inicializar API service
         apiService = RetrofitClient.instance
+
+        btnDescargarLista = findViewById(R.id.btnDescargarLista)
+
+        btnDescargarLista.setOnClickListener {
+            Log.d("EstadisticasGrupo", "=== BOTÓN DESCARGA PRESIONADO ===")
+            Log.d("EstadisticasGrupo", "idProfesor a enviar: $idProfesor")
+
+            if (idProfesor != 0) {
+                Log.d("EstadisticasGrupo", "✅ ID profesor válido, iniciando descarga...")
+                descargarLista(idProfesor)
+            } else {
+                Log.e("EstadisticasGrupo", "❌ ERROR: idProfesor es 0 o inválido")
+                Toast.makeText(this, "Error: No se encontró ID de profesor válido", Toast.LENGTH_SHORT).show()
+            }
+        }
+
 
         // Configurar views
         setupViews()
@@ -84,6 +113,60 @@ class EstadisticasGrupoActivity : AppCompatActivity() {
         tvMenosEntregada = findViewById(R.id.tvMenosEntregada)
         tvMayorPromedio = findViewById(R.id.tvMayorPromedio)
         tvMenorPromedio = findViewById(R.id.tvMenorPromedio)
+    }
+
+    private fun descargarLista(idProfesor: Int) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    val response = apiService.descargarReporteProfesor(idProfesor)
+                    if (response.isSuccessful && response.body() != null) {
+                        val inputStream = response.body()!!.byteStream()
+                        val fileName = "Reporte_Profesor_$idProfesor.xlsx"
+
+                        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        if (!downloadsDir.exists()) downloadsDir.mkdirs()
+
+                        val file = File(downloadsDir, fileName)
+                        FileOutputStream(file).use { output ->
+                            inputStream.copyTo(output)
+                        }
+
+                        // Notificar al Media Scanner
+                        val uri = android.net.Uri.fromFile(file)
+                        val scanIntent = android.content.Intent(android.content.Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                        scanIntent.data = uri
+                        sendBroadcast(scanIntent)
+
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@EstadisticasGrupoActivity,
+                                "Reporte guardado en Descargas: $fileName",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@EstadisticasGrupoActivity,
+                                "Error al descargar el reporte",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            Log.e("EstadisticasGrupo", "Error: ${response.code()} - ${response.message()}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@EstadisticasGrupoActivity,
+                            "Ocurrió un error al descargar el archivo",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        Log.e("EstadisticasGrupo", "Error descargando Excel", e)
+                    }
+                }
+            }
+        }
     }
 
     private fun setupToolbar() {
