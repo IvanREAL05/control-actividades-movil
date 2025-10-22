@@ -1,4 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- Opción visible en toolbar: ícono de configuración -->
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="Configuración"
+        app:showAsAction="always" />
+
+    <!-- Submenú que se despliega al tocar el ícono -->
+    <item
+        android:id="@+id/action_acceder_dashboard"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="🖥️ Acceder a Dashboard Web"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_horario"
+        android:icon="@android:drawable/ic_menu_today"
+        android:title="📅 Ver Horario"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_perfil"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="👤 Mi Perfil"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_cerrar_sesion"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
+        android:title="🚪 Cerrar Sesión"
+        app:showAsAction="never" />
 </menu>

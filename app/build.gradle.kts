@@ -4,7 +4,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
     id("kotlin-parcelize")
+    alias(libs.plugins.ksp) // ✅ Usa alias en lugar de id
 }
+
 
 android {
     namespace = "com.example.control_actividades"
@@ -88,7 +90,13 @@ dependencies {
     implementation(libs.androidx.cardview)
     implementation(libs.androidx.swiperefreshlayout)
 
-    implementation(libs.material.v1100)// Material Components (Material2)
-    implementation(libs.material3) // Para Material3 si usas Compose
+    implementation(libs.material.v1100)
+    implementation(libs.material3)
+
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    implementation("androidx.work:work-runtime-ktx:2.10.5")
+    implementation(libs.logging.interceptor.v4110)
 
 }

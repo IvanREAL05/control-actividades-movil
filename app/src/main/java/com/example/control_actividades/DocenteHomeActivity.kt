@@ -18,6 +18,7 @@ import android.text.style.BackgroundColorSpan
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import android.view.View
+import android.view.Menu
 
 class DocenteHomeActivity : AppCompatActivity() {
 
@@ -51,6 +52,10 @@ class DocenteHomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_docente_home)
 
+        // Configurar Toolbar
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
         // Inicializar vistas
         tvInfoClase = findViewById(R.id.tvInfoClase)
         tvActividadesRecientes = findViewById(R.id.tvActividadesRecientes)
@@ -83,6 +88,75 @@ class DocenteHomeActivity : AppCompatActivity() {
             mostrarDialogoConfirmacionSalir()
         }
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_docente_home, menu)
+        return true
+    }
+
+    // Manejar clics en el menú
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            // Opciones del menú superior
+            R.id.action_acceder_dashboard -> {
+                val intent = Intent(this, ScanLoginDashboardActivity::class.java)
+                intent.putExtra("id_profesor", idProfesor) // ✅ Enviar explícitamente
+                startActivity(intent)
+                true
+            }
+            R.id.action_horario -> {
+                val intent = Intent(this, HorarioDocenteActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            R.id.action_perfil -> {
+                mostrarPerfilDocente()
+                true
+            }
+            R.id.action_cerrar_sesion -> {
+                confirmarCerrarSesion()
+                true
+            }
+            // Botón "atrás" del toolbar (si lo tienes habilitado)
+            android.R.id.home -> {
+                onBackPressedDispatcher.onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun mostrarPerfilDocente() {
+        val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+        val nombreProfesor = sharedPref.getString("nombre_profesor", "Docente")
+        val idProfesor = sharedPref.getInt("id_profesor", -1)
+
+        AlertDialog.Builder(this)
+            .setTitle("👤 Mi Perfil")
+            .setMessage("Nombre: $nombreProfesor\nID: $idProfesor")
+            .setPositiveButton("Aceptar", null)
+            .show()
+    }
+
+    private fun confirmarCerrarSesion() {
+        AlertDialog.Builder(this)
+            .setTitle("Cerrar Sesión")
+            .setMessage("¿Estás seguro que deseas cerrar sesión?")
+            .setPositiveButton("Sí") { _, _ ->
+                // Limpiar SharedPreferences
+                val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+                sharedPref.edit().clear().apply()
+
+                // Volver al login
+                val intent = Intent(this, DocenteLoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
 
     private fun configurarBotonesEspeciales() {
         val btnRegistrarJustificante = findViewById<Button>(R.id.btnRegistrarJustificante)
@@ -536,16 +610,6 @@ class DocenteHomeActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(refrescarClaseRunnable)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressedDispatcher.onBackPressed()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 
     private fun mostrarDialogoConfirmacionSalir() {

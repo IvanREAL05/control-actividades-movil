@@ -21,7 +21,6 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.zxing.integration.android.IntentIntegrator
-import retrofit2.Response
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
@@ -39,6 +38,10 @@ import android.media.MediaScannerConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileOutputStream
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.GlobalScope
+import com.example.control_actividades.database.AppDatabase
+import com.example.control_actividades.repository.OfflineRepository
 
 
 class ActividadesActivity : AppCompatActivity() {
@@ -50,10 +53,13 @@ class ActividadesActivity : AppCompatActivity() {
     private lateinit var cardNoActividades: MaterialCardView
     private lateinit var  btnDescargarExcel2: MaterialButton
     private lateinit var btnHistorialAlumnos: MaterialButton
+    private var validacionJob: Job? = null
 
 
     private val actividades = mutableListOf<Actividad>()
     private lateinit var adapter: ActividadAdapter
+    private lateinit var offlineRepository: OfflineRepository
+    private lateinit var db: AppDatabase
 
     private var idClase: Int = -1
 
@@ -72,6 +78,16 @@ class ActividadesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.actividades_activity)
+        // Inicializar base de datos y repositorio offline
+        db = AppDatabase.getDatabase(applicationContext)
+        offlineRepository = OfflineRepository(
+            context = applicationContext,
+            db = db,
+            apiService = RetrofitClient.instance
+        )
+
+        // Mostrar contador de pendientes
+        mostrarContadorPendientes()
 
         idClase = intent.getIntExtra("id_clase", -1)
         if (idClase == -1) {
@@ -163,76 +179,73 @@ class ActividadesActivity : AppCompatActivity() {
         }
         // =======================================================
     }
-
-    // MOVIDO FUERA DE onCreate() - ESTO CORRIGE EL ERROR
+    // ← AQUÍ VA onNewIntent()
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        Log.d("QR_ACTIVIDAD", "onNewIntent() llamado - Activity reutilizada")
+    }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        Log.d("QR_ACTIVIDAD", "onActivityResult() - requestCode: $requestCode, resultCode: $resultCode")
+
         val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+
+        if (result == null) {
+            Log.w("QR_ACTIVIDAD", "result es null, no es un escaneo QR")
+            return
+        }
+
+        if (result.contents == null) {
+            Log.d("QR_ACTIVIDAD", "Escaneo cancelado por usuario")
+            showToast("Escaneo cancelado")
+            escaneando = false
+
+            // ✅ Limpiar SOLO cuando el usuario cancela
+            limpiarDatosEscaneo()
+            return
+        }
+
+        // ✅ Si llegamos aquí, ES un escaneo válido
         escaneando = false
 
-        Log.d("QR_ACTIVIDAD", "=== RESULTADO DE ESCANEO ===")
-        Log.d("QR_ACTIVIDAD", "resultCode: $resultCode")
+        val qr = result.contents
+        Log.d("QR_ACTIVIDAD", "✅ QR escaneado: $qr")
 
-        if (result != null) {
-            if (result.contents == null) {
-                Log.d("QR_ACTIVIDAD", "Escaneo cancelado por usuario")
-                showToast("Escaneo cancelado")
-            } else {
-                val qr = result.contents
-                Log.d("QR_ACTIVIDAD", "QR escaneado exitosamente: $qr")
+        // Recuperar actividad (NO limpiar aquí todavía)
+        val actividad = actividadParaEscanear ?: run {
+            Log.w("QR_ACTIVIDAD", "actividadParaEscanear es null, recuperando de SharedPreferences")
+            val prefs = getSharedPreferences("escaneo_temp", Context.MODE_PRIVATE)
+            val idActividad = prefs.getInt("id_actividad", -1)
 
-                // Intentar recuperar de la variable primero
-                var actividad = actividadParaEscanear
-
-                // Si la variable es null, reconstruir desde SharedPreferences
-                if (actividad == null) {
-                    Log.d("QR_ACTIVIDAD", "actividadParaEscanear es null, reconstruyendo desde SharedPreferences...")
-                    val prefs = getSharedPreferences("escaneo_temp", Context.MODE_PRIVATE)
-
-                    val idActividad = prefs.getInt("id_actividad", -1)
-                    if (idActividad != -1) {
-                        // Reconstruir la actividad completa
-                        actividad = Actividad(
-                            id_actividad = idActividad,
-                            id_clase = prefs.getInt("id_clase", idClase),
-                            titulo = prefs.getString("titulo_actividad", "") ?: "",
-                            descripcion = prefs.getString("descripcion_actividad", ""),
-                            fecha_entrega = prefs.getString("fecha_entrega", "") ?: "",
-                            hora_entrega = prefs.getString("hora_entrega", ""),
-                            fecha_creacion = prefs.getString("fecha_creacion", "") ?: "",
-                            estado = prefs.getString("estado", ""),
-                            fecha_entrega_real = prefs.getString("fecha_entrega_real", ""),
-                            vigencia = prefs.getString("vigencia", ""),
-                            valor_maximo = prefs.getInt("valor_maximo", 0),
-                            tipo_actividad = prefs.getString("tipo_actividad", "") ?: ""
-                        )
-
-                        Log.d("QR_ACTIVIDAD", "Actividad reconstruida desde SharedPreferences:")
-                        Log.d("QR_ACTIVIDAD", "  - id_actividad: ${actividad.id_actividad}")
-                        Log.d("QR_ACTIVIDAD", "  - titulo: ${actividad.titulo}")
-                    }
-                }
-
-                Log.d("QR_ACTIVIDAD", "Actividad final para escanear:")
-                Log.d("QR_ACTIVIDAD", "  - actividad != null: ${actividad != null}")
-
-                if (actividad == null) {
-                    Log.e("QR_ACTIVIDAD", "ERROR: No se pudo recuperar la actividad")
-                    showToast("⚠️ No se pudo recuperar la actividad seleccionada.")
-                    return
-                }
-
-                Log.d("QR_ACTIVIDAD", "  - id_actividad: ${actividad.id_actividad}")
-                Log.d("QR_ACTIVIDAD", "  - titulo: ${actividad.titulo}")
-                Log.d("QR_ACTIVIDAD", "Llamando a registrarEntregaActividad...")
-
-                validarEntregaActividad(qr, actividad.id_actividad, actividad)
+            if (idActividad == -1) {
+                Log.e("QR_ACTIVIDAD", "ERROR: No se encontró id_actividad en SharedPreferences")
+                showToast("⚠️ No se pudo recuperar la actividad")
+                limpiarDatosEscaneo()
+                return
             }
-        } else {
-            Log.e("QR_ACTIVIDAD", "No se detectó ningún QR - result es null")
-            showToast("No se detectó ningún QR")
+
+            Actividad(
+                id_actividad = idActividad,
+                id_clase = prefs.getInt("id_clase", idClase),
+                titulo = prefs.getString("titulo_actividad", "") ?: "",
+                descripcion = prefs.getString("descripcion_actividad", ""),
+                fecha_entrega = prefs.getString("fecha_entrega", "") ?: "",
+                hora_entrega = prefs.getString("hora_entrega", ""),
+                fecha_creacion = prefs.getString("fecha_creacion", "") ?: "",
+                estado = prefs.getString("estado", ""),
+                fecha_entrega_real = prefs.getString("fecha_entrega_real", ""),
+                vigencia = prefs.getString("vigencia", ""),
+                valor_maximo = prefs.getInt("valor_maximo", 0),
+                tipo_actividad = prefs.getString("tipo_actividad", "") ?: ""
+            )
         }
+
+        Log.d("QR_ACTIVIDAD", "✅ Actividad recuperada: id=${actividad.id_actividad}, titulo='${actividad.titulo}'")
+
+        // Registrar entrega (NO limpiar aquí)
+        validarEntregaActividad(qr, actividad.id_actividad, actividad)
     }
 
     private fun cargarYMostrarActividades() {
@@ -327,6 +340,12 @@ class ActividadesActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun limpiarDatosEscaneo() {
+        Log.d("QR_ACTIVIDAD", "Limpiando datos de escaneo...")
+        getSharedPreferences("escaneo_temp", Context.MODE_PRIVATE).edit().clear().apply()
+        actividadParaEscanear = null
+    }
+
     // ===================== ESCANEO PARA ACTIVIDADES =====================
 
     private fun validarEntregaActividad(qr: String, idActividad: Int, actividad: Actividad) {
@@ -334,40 +353,39 @@ class ActividadesActivity : AppCompatActivity() {
         Log.d("QR_VALIDAR", "QR: $qr")
         Log.d("QR_VALIDAR", "idActividad: $idActividad")
         Log.d("QR_VALIDAR", "Actividad: ${actividad.titulo} (id=${actividad.id_actividad})")
-        Log.d("QR_VALIDAR", "URL completa: ${RetrofitClient.instance::class.java}")
-        Log.d("QR_VALIDAR", "BASE_URL: http://192.168.100.11:3001/")
 
         val request = EntregaRequest(qr, idActividad)
 
-        // Ejecutar en una corrutina
-        lifecycleScope.launch {
+        // ⚠️ Usar GlobalScope para que NO se cancele con el lifecycle
+        GlobalScope.launch(Dispatchers.Main) {
             try {
+                Log.d("QR_VALIDAR", "🌐 Iniciando petición HTTP...")
                 val body = RetrofitClient.instance.validarEntrega(request)
-                Log.d("QR_VALIDAR", "Respuesta body: $body")
+                Log.d("QR_VALIDAR", "✅ Respuesta recibida: $body")
 
                 when {
                     actividad.tipo_actividad.equals("examen", ignoreCase = true) -> {
-                        Log.d("QR_VALIDAR", "Entrega de examen detectada, abriendo diálogo manual")
+                        Log.d("QR_VALIDAR", "📝 Examen detectado")
                         abrirDialogCalificacionManual(qr, actividad, body)
                     }
                     body.tarde -> {
-                        Log.d("QR_VALIDAR", "Entrega tardía detectada, abriendo diálogo manual")
+                        Log.d("QR_VALIDAR", "⏰ Entrega tardía detectada")
                         abrirDialogCalificacionManual(qr, actividad, body)
                     }
                     body.success -> {
                         val calificacion = body.calificacion ?: actividad.valor_maximo
-                        Log.d("QR_VALIDAR", "Entrega a tiempo, registrando calificación automática: $calificacion")
+                        Log.d("QR_VALIDAR", "✅ Entrega a tiempo, calificación: $calificacion")
                         registrarEntregaActividadConCalificacion(qr, actividad.id_actividad, actividad, calificacion)
                     }
                     else -> {
-                        Log.d("QR_VALIDAR", "Respuesta no exitosa: ${body.mensaje}")
+                        Log.w("QR_VALIDAR", "⚠️ Respuesta no exitosa: ${body.mensaje}")
                         showToast(body.mensaje)
                     }
                 }
 
             } catch (e: Exception) {
-                Log.e("QR_VALIDAR", "Fallo en la llamada Retrofit o error de red", e)
-                showToast("Falla en la llamada: ${e.message}")
+                Log.e("QR_VALIDAR", "❌ Error en validación: ${e.message}", e)
+                showToast("Error: ${e.message}")
             }
         }
     }
@@ -424,33 +442,47 @@ class ActividadesActivity : AppCompatActivity() {
         Log.d("QR_REGISTRAR", "Actividad: ${actividad.titulo} (id=${actividad.id_actividad})")
         Log.d("QR_REGISTRAR", "Calificación a enviar: $calificacion")
 
-        val request = EntregaRequest(qr, idActividad, calificacion)
-
-        // Ejecutar en corrutina
         lifecycleScope.launch {
             try {
-                val response = RetrofitClient.instance.registrarEntrega(request)
-                val mensaje = response.mensaje ?: "Entrega registrada"
+                Log.d("QR_REGISTRAR", "🌐 Enviando entrega de actividad...")
 
-                Log.d("QR_REGISTRAR", "Entrega registrada exitosamente: $mensaje")
-                showToast(mensaje)
+                // ✅ Usar el repositorio offline
+                offlineRepository.guardarEntregaActividad(qr, idActividad, calificacion)
+
+                // Verificar si se guardó offline o se envió
+                val hayConexion = tieneConexionInternet()
+
+                if (hayConexion) {
+                    Log.d("QR_REGISTRAR", "✅ Entrega registrada exitosamente")
+                    showToast("✅ Entrega registrada exitosamente")
+                } else {
+                    Log.d("QR_REGISTRAR", "💾 Guardado localmente (sin internet)")
+                    showToast("💾 Se guardó localmente. Se sincronizará cuando haya internet.")
+                }
+
                 reproducirSonidoEscaneo()
+
+                // Actualizar contador
+                mostrarContadorPendientes()
+
                 preguntarSeguirEscaneando(actividad)
 
             } catch (e: Exception) {
-                Log.e("QR_REGISTRAR", "Fallo de conexión o error Retrofit", e)
+                Log.e("QR_REGISTRAR", "❌ Error al procesar entrega", e)
                 reproducirSonidoError()
                 vibrarCelular()
 
-                AlertDialog.Builder(this@ActividadesActivity)
-                    .setTitle("No se pudo registrar")
-                    .setMessage("❌ Error de conexión: ${e.message}")
-                    .setPositiveButton("Seguir escaneando") { d, _ ->
-                        d.dismiss()
-                        iniciarEscaneo()
-                    }
-                    .setNegativeButton("Cerrar", null)
-                    .show()
+                if (!isFinishing && !isDestroyed) {
+                    AlertDialog.Builder(this@ActividadesActivity)
+                        .setTitle("Error")
+                        .setMessage("❌ Error al procesar: ${e.message}")
+                        .setPositiveButton("Seguir escaneando") { d, _ ->
+                            d.dismiss()
+                            iniciarEscaneo()
+                        }
+                        .setNegativeButton("Cerrar", null)
+                        .show()
+                }
             }
         }
     }
@@ -511,7 +543,7 @@ class ActividadesActivity : AppCompatActivity() {
         integrator.setPrompt("Escanea el QR del alumno para '${actividadParaEscanear?.titulo ?: "actividad"}'")
         integrator.setBeepEnabled(false)
         integrator.setOrientationLocked(true)
-        // Usar el método clásico que SÍ permite múltiples usos
+        integrator.setCaptureActivity(com.journeyapps.barcodescanner.CaptureActivity::class.java)
         integrator.initiateScan()
     }
 
@@ -522,12 +554,15 @@ class ActividadesActivity : AppCompatActivity() {
             .setMessage("Actividad: ${actividad.titulo}\nPuedes registrar otro alumno o finalizar.")
             .setPositiveButton("Sí, otro QR") { d, _ ->
                 d.dismiss()
-                // SOLUCIÓN: Solo llamar iniciarEscaneo() directamente
-                // No llamar escanearQR() porque ya tenemos todo configurado
+                Log.d("QR_ACTIVIDAD", "Usuario eligió seguir escaneando")
+                // ✅ Mantener actividadParaEscanear y SharedPreferences
                 iniciarEscaneo()
             }
             .setNegativeButton("No") { d, _ ->
                 d.dismiss()
+                Log.d("QR_ACTIVIDAD", "Usuario eligió finalizar escaneo")
+                // ✅ Limpiar SOLO cuando el usuario finaliza
+                limpiarDatosEscaneo()
             }
             .setCancelable(false)
             .show()
@@ -561,14 +596,6 @@ class ActividadesActivity : AppCompatActivity() {
                 @Suppress("DEPRECATION")
                 it.vibrate(250)
             }
-        }
-    }
-
-    private fun safeErrorBody(response: Response<*>): String? {
-        return try {
-            response.errorBody()?.string()
-        } catch (_: Exception) {
-            null
         }
     }
 
@@ -770,12 +797,6 @@ class ActividadesActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun ocultarProgreso() {
-        btnDescargarExcel.isEnabled = true
-        btnDescargarExcel.text = "Descargar reporte de actividades"
-    }
-
     //Nuevo excel
     private fun descargarReporteExcelGeneral() {
         // Verificar que tenemos un id_clase válido
@@ -953,8 +974,54 @@ class ActividadesActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        validacionJob?.cancel()
+        Log.d("QR_ACTIVIDAD", "Activity destruida, jobs cancelados")
+    }
 
+    // Verificar conexión a internet
+    private fun tieneConexionInternet(): Boolean {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val network = cm.activeNetwork ?: return false
+        val capabilities = cm.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
 
+    // Mostrar contador de registros pendientes
+    private fun mostrarContadorPendientes() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val pendientes = offlineRepository.contarPendientes()
 
+                withContext(Dispatchers.Main) {
+                    if (pendientes > 0) {
+                        supportActionBar?.subtitle = "📤 $pendientes pendiente(s)"
+                        Log.d("OFFLINE", "Hay $pendientes registros pendientes de sincronizar")
+                    } else {
+                        supportActionBar?.subtitle = null
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("OFFLINE", "Error al contar pendientes: ${e.message}")
+            }
+        }
+    }
+
+    // Sincronizar manualmente
+    private fun sincronizarManualmente() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                offlineRepository.sincronizarPendientes()
+
+                withContext(Dispatchers.Main) {
+                    mostrarContadorPendientes()
+                    showToast("✅ Sincronización completada")
+                }
+            } catch (e: Exception) {
+                Log.e("OFFLINE", "Error al sincronizar: ${e.message}")
+            }
+        }
+    }
 
 }

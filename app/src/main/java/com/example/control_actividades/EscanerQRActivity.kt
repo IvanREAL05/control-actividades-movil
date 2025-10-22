@@ -21,11 +21,14 @@ import android.animation.ObjectAnimator
 import android.widget.ProgressBar
 import android.os.Handler
 import android.os.Looper
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-
-
+import android.content.Context
+import com.example.control_actividades.database.AppDatabase
+import com.example.control_actividades.repository.OfflineRepository
+import com.example.control_actividades.repository.SaveResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class EscanerQRActivity : AppCompatActivity() {
 
@@ -39,10 +42,21 @@ class EscanerQRActivity : AppCompatActivity() {
     private var currentDialog: AlertDialog? = null
 
     private val activityId = System.currentTimeMillis().toString()
+    private lateinit var offlineRepository: OfflineRepository
+    private lateinit var db: AppDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_escaner_qr)
+
+        db = AppDatabase.getDatabase(applicationContext)
+        offlineRepository = OfflineRepository(
+            context = applicationContext,
+            db = db,
+            apiService = RetrofitClient.instance
+        )
+
+        mostrarContadorPendientes()
 
         val idClase = intent.getIntExtra("id_clase", -1)
         Log.d("ID_CLASE_DEBUG", "EscanerQR recibió ID: $idClase")
@@ -60,6 +74,7 @@ class EscanerQRActivity : AppCompatActivity() {
 
         val btnCancelar: Button = findViewById(R.id.btnCancelar)
         val btnVerLista: Button = findViewById(R.id.btnVerLista)
+        val btnSincronizar: Button = findViewById(R.id.btnSincronizar)
 
         btnCancelar.setOnClickListener {
             finish()
@@ -75,6 +90,17 @@ class EscanerQRActivity : AppCompatActivity() {
                 showToast("⚠️ No se encontró la clase actual.")
             }
         }
+
+        btnSincronizar.setOnClickListener {
+            if (tieneConexionInternet()) {
+                showToast("📡 Sincronizando registros pendientes...")
+                sincronizarManualmente()
+            } else {
+                showToast("❌ No hay conexión a internet")
+            }
+        }
+
+        actualizarVisibilidadBotonSincronizar()
 
         escaneoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val intent = result.data
@@ -137,7 +163,6 @@ class EscanerQRActivity : AppCompatActivity() {
         if (ScannerStateManager.isProcessing) {
             Log.w("ESCANEO", "Hay una petición HTTP en proceso GLOBALMENTE, esperando...")
             showToast("⏳ Espera a que termine el registro anterior...")
-            // ✅ NO cerrar la Activity, solo esperar
             return
         }
 
@@ -155,7 +180,6 @@ class EscanerQRActivity : AppCompatActivity() {
         if (!ScannerStateManager.tryLock(activityId)) {
             Log.w("API", "Ya hay una petición en proceso en otra Activity")
             showToast("⏳ Procesando petición anterior...")
-            // ✅ NO cerrar la Activity
             return
         }
 
@@ -168,103 +192,74 @@ class EscanerQRActivity : AppCompatActivity() {
         Log.d("ID_CLASE_DEBUG", "Procesando QR con ID de clase: $idClase")
         Log.d("QR_DEBUG", "Contenido del QR enviado: $scanData")
 
-        val request = AsistenciaRequest(
-            qr = scanData,
-            estado = estadoSeleccionado,
-            id_clase = idClase
-        )
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val startTime = System.currentTimeMillis()
+                Log.d("API", "🚀 Intentando guardar asistencia...")
+                ScannerStateManager.markRequestStarted()
 
-        val startTime = System.currentTimeMillis()
-        Log.d("API", "🚀 Iniciando petición HTTP...")
-        ScannerStateManager.markRequestStarted()
+                val resultado = offlineRepository.guardarAsistencia(
+                    qr = scanData,
+                    estado = estadoSeleccionado,
+                    idClase = idClase
+                )
 
-        // 🔹 USAR CALLBACKS EN LUGAR DE COROUTINES
-        RetrofitClient.instance.registrarAsistencia(request).enqueue(object : Callback<AsistenciaResponse> {
-            override fun onResponse(call: Call<AsistenciaResponse>, response: Response<AsistenciaResponse>) {
                 val endTime = System.currentTimeMillis()
                 val responseTime = endTime - startTime
+                Log.d("PERFORMANCE", "⏱️ Tiempo de procesamiento: ${responseTime}ms")
 
-                Log.d("PERFORMANCE", "⏱️ Tiempo de respuesta: ${responseTime}ms")
-
-                runOnUiThread {
+                withContext(Dispatchers.Main) {
                     if (isFinishing || isDestroyed) {
                         Log.w("LIFECYCLE", "Activity ya destruida, limpiando estado")
                         ScannerStateManager.unlock(activityId)
-                        return@runOnUiThread
+                        return@withContext
                     }
 
                     mostrarIndicadorCarga(false)
+                    reproducirSonidoExito()
+                    animarTextoExito()
 
-                    if (response.isSuccessful && response.body() != null) {
-                        val body = response.body()!!
-
-                        Log.d("API_RESPONSE", "✅ Respuesta exitosa")
-                        Log.d("API_RESPONSE", "Success: ${body.success}")
-                        Log.d("API_RESPONSE", "Mensaje: ${body.mensaje}")
-
-                        when {
-                            body.success == true -> {
-                                reproducirSonidoExito()
-                                animarTextoExito()
-
-                                val mensaje = body.mensaje ?: "Asistencia registrada"
-                                tvScanResult.text = "✅ $mensaje"
-                                showToastExito("✅ $mensaje")
-
-                                ScannerStateManager.unlock(activityId)
-
-                                Handler(Looper.getMainLooper()).postDelayed({
-                                    if (!isFinishing && !isDestroyed) {
-                                        mostrarDialogoContinuar()
-                                    }
-                                }, 2000)
-                            }
-
-                            body.duplicado == true -> {
-                                reproducirSonidoAdvertencia()
-                                val mensaje = body.mensaje ?: "Ya registrado"
-                                tvScanResult.text = "ℹ️ $mensaje"
-
-                                ScannerStateManager.unlock(activityId)
-                                mostrarDialogoAlerta("Ya registrado 🎓", mensaje)
-                            }
-
-                            else -> {
-                                reproducirSonidoError()
-                                vibrarCelular()
-                                val mensaje = body.mensaje ?: "Error desconocido"
-                                tvScanResult.text = "❌ $mensaje"
-                                showToast("❌ $mensaje")
-
-                                ScannerStateManager.unlock(activityId)
-                                mostrarDialogoContinuar()
-                            }
+                    when (resultado) {
+                        is SaveResult.OnlineSuccess -> {
+                            Log.d("RESULTADO", "✅ Guardado ONLINE exitoso")
+                            tvScanResult.text = "✅ Asistencia registrada"
+                            showToastExito("✅ Asistencia registrada exitosamente")
                         }
-                    } else {
-                        // Error HTTP
-                        Log.e("API_ERROR", "Error HTTP: ${response.code()}")
-                        manejarErrorHTTP(response, responseTime)
+                        is SaveResult.OfflineSaved -> {
+                            Log.d("RESULTADO", "💾 Guardado OFFLINE")
+                            tvScanResult.text = "💾 Guardado localmente (sin internet)"
+                            showToastExito("💾 Se guardó localmente. Se sincronizará cuando haya internet.")
+                        }
+                        is SaveResult.Error -> {
+                            Log.e("RESULTADO", "❌ Error: ${resultado.message}")
+                            tvScanResult.text = "❌ Error al guardar"
+                            showToast("❌ ${resultado.message}")
+                        }
                     }
+
+                    mostrarContadorPendientes()
+                    actualizarVisibilidadBotonSincronizar()
+                    ScannerStateManager.unlock(activityId)
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        if (!isFinishing && !isDestroyed) {
+                            mostrarDialogoContinuar()
+                        }
+                    }, 2000)
                 }
-            }
 
-            override fun onFailure(call: Call<AsistenciaResponse>, t: Throwable) {
-                val endTime = System.currentTimeMillis()
-                val responseTime = endTime - startTime
+            } catch (e: Exception) {
+                Log.e("OFFLINE_ERROR", "Error al procesar: ${e.message}", e)
 
-                Log.e("NETWORK_ERROR", "❌ onFailure después de ${responseTime}ms")
-                Log.e("NETWORK_ERROR", "Tipo: ${t.javaClass.simpleName}")
-                Log.e("NETWORK_ERROR", "Mensaje: ${t.message}")
-
-                runOnUiThread {
+                withContext(Dispatchers.Main) {
                     if (isFinishing || isDestroyed) {
                         ScannerStateManager.unlock(activityId)
-                        return@runOnUiThread
+                        return@withContext
                     }
 
                     mostrarIndicadorCarga(false)
-                    tvScanResult.text = "❌ Sin conexión a Internet"
-                    showToast("❌ Verifica tu conexión a Internet")
+                    tvScanResult.text = "❌ Error al guardar"
+                    showToast("❌ Error: ${e.message}")
                     reproducirSonidoError()
                     vibrarCelular()
 
@@ -272,30 +267,7 @@ class EscanerQRActivity : AppCompatActivity() {
                     mostrarDialogoContinuar()
                 }
             }
-        })
-    }
-
-    private fun manejarErrorHTTP(response: Response<AsistenciaResponse>, responseTime: Long) {
-        reproducirSonidoError()
-        vibrarCelular()
-
-        when (response.code()) {
-            400 -> {
-                tvScanResult.text = "❌ QR inválido o expirado"
-                showToast("❌ QR inválido o expirado")
-            }
-            404 -> {
-                tvScanResult.text = "❌ Estudiante no encontrado"
-                showToast("❌ Estudiante no encontrado")
-            }
-            else -> {
-                tvScanResult.text = "❌ Error HTTP ${response.code()}"
-                showToast("❌ Error del servidor")
-            }
         }
-
-        ScannerStateManager.unlock(activityId)
-        mostrarDialogoContinuar()
     }
 
     private fun mostrarDialogoContinuar() {
@@ -317,26 +289,6 @@ class EscanerQRActivity : AppCompatActivity() {
             dialog.dismiss()
             currentDialog = null
             finish()
-        }
-
-        builder.setCancelable(false)
-        currentDialog = builder.create()
-        currentDialog?.show()
-    }
-
-    private fun mostrarDialogoAlerta(titulo: String, mensaje: String) {
-        if (isFinishing || isDestroyed) return
-
-        currentDialog?.dismiss()
-
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle(titulo)
-        builder.setMessage(mensaje)
-
-        builder.setPositiveButton("Continuar") { dialog, _ ->
-            dialog.dismiss()
-            currentDialog = null
-            mostrarDialogoContinuar()
         }
 
         builder.setCancelable(false)
@@ -395,16 +347,6 @@ class EscanerQRActivity : AppCompatActivity() {
         }
     }
 
-    private fun reproducirSonidoAdvertencia() {
-        try {
-            val mediaPlayer = MediaPlayer.create(this, R.raw.error_sound)
-            mediaPlayer?.start()
-            mediaPlayer?.setOnCompletionListener { it.release() }
-        } catch (e: Exception) {
-            Log.e("AUDIO", "Error: ${e.message}")
-        }
-    }
-
     private fun vibrarCelular() {
         try {
             val vibrator = getSystemService(Vibrator::class.java)
@@ -419,6 +361,62 @@ class EscanerQRActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             Log.e("VIBRATION", "Error: ${e.message}")
+        }
+    }
+
+    private fun tieneConexionInternet(): Boolean {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val network = cm.activeNetwork ?: return false
+        val capabilities = cm.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    private fun mostrarContadorPendientes() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val pendientes = offlineRepository.contarPendientes()
+
+                withContext(Dispatchers.Main) {
+                    if (pendientes > 0) {
+                        supportActionBar?.subtitle = "📤 $pendientes pendiente(s)"
+                        Log.d("OFFLINE", "Hay $pendientes registros pendientes de sincronizar")
+                    } else {
+                        supportActionBar?.subtitle = null
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("OFFLINE", "Error al contar pendientes: ${e.message}")
+            }
+        }
+    }
+
+    private fun actualizarVisibilidadBotonSincronizar() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val pendientes = offlineRepository.contarPendientes()
+            withContext(Dispatchers.Main) {
+                val btnSincronizar: Button = findViewById(R.id.btnSincronizar)
+                btnSincronizar.visibility = if (pendientes > 0) android.view.View.VISIBLE else android.view.View.GONE
+            }
+        }
+    }
+
+    private fun sincronizarManualmente() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                offlineRepository.sincronizarPendientes()
+
+                withContext(Dispatchers.Main) {
+                    mostrarContadorPendientes()
+                    actualizarVisibilidadBotonSincronizar()
+                    showToast("✅ Sincronización completada")
+                }
+            } catch (e: Exception) {
+                Log.e("OFFLINE", "Error al sincronizar: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    showToast("❌ Error al sincronizar")
+                }
+            }
         }
     }
 }

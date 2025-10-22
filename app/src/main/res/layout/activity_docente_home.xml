@@ -7,13 +7,16 @@
     android:background="@color/background_light"
     android:fitsSystemWindows="true">
 
-    <!-- Toolbar -->
+
+    <!-- Toolbar con menú de opciones -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/primary_blue"
-        android:elevation="8dp">
+        android:elevation="8dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
         <TextView
             android:id="@+id/toolbar_title"
@@ -23,7 +26,7 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@android:color/white"
-            android:layout_gravity="center"/>
+            android:layout_gravity="start"/>
     </androidx.appcompat.widget.Toolbar>
 
     <ScrollView

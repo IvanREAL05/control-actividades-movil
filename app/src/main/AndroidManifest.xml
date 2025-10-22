@@ -18,6 +18,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -104,6 +105,7 @@
             android:name=".ActividadesActivity"
             android:exported="false"
             android:screenOrientation="fullSensor"
+            android:launchMode="singleTop"
             android:parentActivityName=".DocenteHomeActivity" />
 
         <activity
@@ -141,6 +143,12 @@
             android:exported="false"
             android:screenOrientation="fullSensor"
             android:parentActivityName=".ListaGrupoActivity" />
+
+        <activity
+            android:name=".ScanLoginDashboardActivity"
+            android:exported="false"
+            android:screenOrientation="fullSensor"
+            android:parentActivityName=".DocenteHomeActivity" />
 
     </application>
 

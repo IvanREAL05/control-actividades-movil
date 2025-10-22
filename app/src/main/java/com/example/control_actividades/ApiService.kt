@@ -108,9 +108,9 @@ interface ApiService {
     ): Response<ActualizarEstadoResponse>
 
     @POST("api/asistencias/")
-    fun registrarAsistencia(
+    suspend fun registrarAsistencia(
         @Body request: AsistenciaRequest
-    ): Call<AsistenciaResponse>
+    ): Response<AsistenciaResponse>
 
 
 
@@ -218,5 +218,15 @@ interface ApiService {
     suspend fun descargarReporteClase(
         @Path("idClase") idClase: Int
     ): Response<ResponseBody>
+
+    @GET("api/clases/profesor/{id_profesor}")
+    suspend fun getClasesPorProfesor(
+        @Path("id_profesor") idProfesor: Int
+    ): ClasesProfesorResponse
+
+    @POST("/api/login/auth/confirmar-sesion")
+    suspend fun confirmarSesionDashboard(
+        @Body request: ConfirmarSesionRequest
+    ): ConfirmarSesionResponse
 
 }
