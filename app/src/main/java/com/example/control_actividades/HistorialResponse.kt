@@ -19,7 +19,17 @@ data class AlumnoHistorialCompleto(
     @SerializedName("grupo") val grupo: String?,
     @SerializedName("actividades") val actividades: List<ActividadDetalle>,
     @SerializedName("entregado") val entregado: Int,
-    @SerializedName("ponderacion") val ponderacion: Int
+    @SerializedName("ponderacion") val ponderacion: Int,
+
+    // ⭐ NUEVOS CAMPOS - Calificaciones de parciales
+    @SerializedName("parcial_1") val parcial_1: Int? = null,
+    @SerializedName("parcial_2") val parcial_2: Int? = null,
+    @SerializedName("ordinario") val ordinario: Double? = null,
+    @SerializedName("promedio_parciales") val promedio_parciales: Double? = null,
+    @SerializedName("estado_parcial_1") val estado_parcial_1: String = "pendiente",
+    @SerializedName("estado_parcial_2") val estado_parcial_2: String = "pendiente",
+    @SerializedName("fecha_parcial_1") val fecha_parcial_1: String? = null,
+    @SerializedName("fecha_parcial_2") val fecha_parcial_2: String? = null
 ) {
     // ✅ VERSIÓN VIEJA - Sin cambios
     val actividadesEntregadas: Int

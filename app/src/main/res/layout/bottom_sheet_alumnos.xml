@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bottom_sheet_background2"
+    android:padding="0dp">
+
+    <!-- Header del BottomSheet -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bottom_sheet_header_gradient"
+        android:padding="20dp">
+
+        <!-- Handle para arrastrar -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bottom_sheet_handle"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👥"
+                android:textSize="28sp"
+                android:layout_marginEnd="12dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selecciona un Alumno"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white" />
+
+                <TextView
+                    android:id="@+id/tvClaseNombre"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Matemáticas II"
+                    android:textSize="14sp"
+                    android:textColor="#E0E0E0"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnCerrarBottomSheet"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                app:tint="@android:color/white"
+                android:contentDescription="Cerrar" />
+
+        </LinearLayout>
+
+        <!-- Buscador -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:boxBackgroundMode="outline"
+            app:boxBackgroundColor="@android:color/white"
+            app:boxStrokeColor="#9B59B6"
+            app:hintTextColor="#9B59B6"
+            android:hint="🔍 Buscar alumno...">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etBuscarAlumno"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:textSize="15sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+    <!-- Contador de alumnos -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="#F5F5F5">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Lista de Alumnos"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#666666" />
+
+        <TextView
+            android:id="@+id/tvContadorAlumnos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 alumnos"
+            android:textSize="13sp"
+            android:textColor="#9B59B6"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- RecyclerView con lista de alumnos -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvAlumnos"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:maxHeight="400dp"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
+
+    <!-- Estado vacío -->
+    <LinearLayout
+        android:id="@+id/layoutEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📭"
+            android:textSize="48sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No se encontraron alumnos"
+            android:textSize="16sp"
+            android:textColor="#999999"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

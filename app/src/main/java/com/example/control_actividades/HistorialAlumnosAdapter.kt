@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
-import kotlin.math.roundToInt
 import android.graphics.Color
 
 class HistorialAlumnosAdapter(
@@ -32,6 +31,14 @@ class HistorialAlumnosAdapter(
         private val tvPromedioCalif: TextView = itemView.findViewById(R.id.tvPromedioCalif)
         private val ivExpandir: ImageView = itemView.findViewById(R.id.ivExpandir)
         private val tvEstadoIndicador: TextView = itemView.findViewById(R.id.tvEstadoIndicador)
+        private val layoutSeccionParciales: View? = itemView.findViewById(R.id.layoutSeccionParciales)
+        private val tvPromedioParciales: TextView? = itemView.findViewById(R.id.tvPromedioParciales)
+        private val tvCalifParcial1: TextView? = itemView.findViewById(R.id.tvCalifParcial1)
+        private val tvCalifParcial2: TextView? = itemView.findViewById(R.id.tvCalifParcial2)
+        private val tvEstadoParcial1: TextView? = itemView.findViewById(R.id.tvEstadoParcial1)
+        private val tvEstadoParcial2: TextView? = itemView.findViewById(R.id.tvEstadoParcial2)
+        private val tvFechaParcial1: TextView? = itemView.findViewById(R.id.tvFechaParcial1)
+        private val tvFechaParcial2: TextView? = itemView.findViewById(R.id.tvFechaParcial2)
 
         // 🔥 NUEVOS VIEWS - Chips y barra de progreso
         private val tvChipPorcentaje: TextView? = itemView.findViewById(R.id.tvChipPorcentaje)
@@ -48,6 +55,9 @@ class HistorialAlumnosAdapter(
         fun bind(alumno: AlumnoHistorialCompleto, position: Int) {
             // Configurar header
             configurarHeader(alumno)
+
+            // ⭐ AGREGAR en fun bind(), después de configurarHeader()
+            configurarSeccionParciales(alumno)
 
             // Configurar sección expandible
             configurarSeccionExpandible(alumno)
@@ -128,6 +138,41 @@ class HistorialAlumnosAdapter(
                     it.text = "⭐"
                 } else {
                     it.visibility = View.GONE
+                }
+            }
+        }
+
+        // ⭐ NUEVA FUNCIÓN - Configurar sección de parciales
+        private fun configurarSeccionParciales(alumno: AlumnoHistorialCompleto) {
+            layoutSeccionParciales?.visibility = View.VISIBLE
+
+            // Promedio (usar ordinario si existe)
+            val promedioMostrar = alumno.ordinario ?: alumno.promedio_parciales
+            tvPromedioParciales?.text = if (promedioMostrar != null) {
+                String.format("%.1f", promedioMostrar)
+            } else "--"
+
+            // Parcial 1
+            tvCalifParcial1?.text = alumno.parcial_1?.toString() ?: "--"
+            tvEstadoParcial1?.text = if (alumno.parcial_1 != null) "✓ Calificado" else "⏳ Pendiente"
+            tvFechaParcial1?.apply {
+                if (!alumno.fecha_parcial_1.isNullOrEmpty()) {
+                    visibility = View.VISIBLE
+                    text = alumno.fecha_parcial_1
+                } else {
+                    visibility = View.GONE
+                }
+            }
+
+            // Parcial 2
+            tvCalifParcial2?.text = alumno.parcial_2?.toString() ?: "--"
+            tvEstadoParcial2?.text = if (alumno.parcial_2 != null) "✓ Calificado" else "⏳ Pendiente"
+            tvFechaParcial2?.apply {
+                if (!alumno.fecha_parcial_2.isNullOrEmpty()) {
+                    visibility = View.VISIBLE
+                    text = alumno.fecha_parcial_2
+                } else {
+                    visibility = View.GONE
                 }
             }
         }

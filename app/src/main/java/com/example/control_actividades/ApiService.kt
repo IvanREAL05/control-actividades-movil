@@ -175,11 +175,6 @@ interface ApiService {
     @GET("api/observaciones")
     suspend fun obtenerObservaciones(): ObservacionResponse
 
-    // Obtener por estudiante
-    @GET("api/observaciones/estudiante/{estudiante_id}")
-    suspend fun obtenerObservacionesPorEstudiante(
-        @Path("estudiante_id") estudianteId: Int
-    ): ObservacionResponse
 
     // Eliminar observación
     @DELETE("api/observaciones/{id}")
@@ -224,9 +219,43 @@ interface ApiService {
         @Path("id_profesor") idProfesor: Int
     ): ClasesProfesorResponse
 
-    @POST("/api/login/auth/confirmar-sesion")
+    @POST("api/login/auth/confirmar-sesion")
     suspend fun confirmarSesionDashboard(
         @Body request: ConfirmarSesionRequest
     ): ConfirmarSesionResponse
+
+    // Obtener calificaciones de parciales de UN estudiante
+    @GET("api/calificaciones/estudiante/{id_estudiante}/clase/{id_clase}")
+    suspend fun obtenerCalificacionesEstudiante(
+        @Path("id_estudiante") idEstudiante: Int,
+        @Path("id_clase") idClase: Int
+    ): CalificacionesEstudianteResponse
+
+    // Obtener calificaciones de parciales de TODOS los estudiantes de una clase
+    @GET("api/calificaciones/clase/{id_clase}")
+    suspend fun obtenerCalificacionesClase(
+        @Path("id_clase") idClase: Int
+    ): List<CalificacionesEstudianteResponse>
+
+    /**
+     * Consultar asistencias de un alumno en una clase por rango de fechas
+     * GET /api/estadisticas/asistencias/alumno/{id_estudiante}/clase/{id_clase}
+     */
+    @GET("api/estadisticas/asistencias/alumno/{id_estudiante}/clase/{id_clase}")
+    suspend fun obtenerAsistenciasRango(
+        @Path("id_estudiante") idEstudiante: Int,
+        @Path("id_clase") idClase: Int,
+        @Query("fecha_inicio") fechaInicio: String,
+        @Query("fecha_fin") fechaFin: String
+    ): AsistenciasRangoResponse  // ← Cambiar a este tipo
+
+    /**
+     * Obtener lista de alumnos de una clase (para BottomSheet)
+     * GET /api/estadisticas/alumnos-clase/{id_clase}
+     */
+    @GET("api/estadisticas/alumnos-clase/{id_clase}")
+    suspend fun getEstudiantesPorClase(
+        @Path("id_clase") idClase: Int
+    ): Response<AlumnosClaseResponse>
 
 }

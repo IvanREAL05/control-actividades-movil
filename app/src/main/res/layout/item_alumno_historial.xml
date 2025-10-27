@@ -144,7 +144,7 @@
                     </LinearLayout>
 
                     <!-- Icono de expansión -->
-                    <ImageView
+                     <ImageView
                         android:id="@+id/ivExpandir"
                         android:layout_width="28dp"
                         android:layout_height="28dp"
@@ -241,7 +241,278 @@
                 android:layout_height="1dp"
                 android:background="@drawable/gradient_divider" />
 
-            <!-- Header de actividades mejorado -->
+            <!-- ============================================ -->
+            <!-- NUEVA SECCIÓN: CALIFICACIONES DE PARCIALES -->
+            <!-- ============================================ -->
+            <LinearLayout
+                android:id="@+id/layoutSeccionParciales"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#F8F9FA"
+                android:visibility="visible">
+
+                <!-- Header de Parciales -->
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:paddingBottom="12dp"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical">
+
+                        <View
+                            android:layout_width="4dp"
+                            android:layout_height="20dp"
+                            android:background="@drawable/accent_bar_purple"
+                            android:layout_marginEnd="8dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📋 Calificaciones de Parciales"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="#6A1B9A" />
+                    </LinearLayout>
+
+                    <!-- Promedio de parciales -->
+                    <TextView
+                        android:id="@+id/tvPromedioParciales"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="9.2"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/circle_purple_bg"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:minWidth="40dp"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <!-- Tarjetas de Parciales -->
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="16dp"
+                    android:weightSum="2">
+
+                    <!-- Parcial 1 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="4dp"
+                        app:strokeWidth="2dp"
+                        app:strokeColor="#E1BEE7"
+                        app:cardBackgroundColor="@android:color/white">
+
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="16dp"
+                            android:gravity="center">
+
+                            <!-- Icono y título -->
+                            <LinearLayout
+                                android:orientation="horizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="📝"
+                                    android:textSize="20sp"
+                                    android:layout_marginEnd="6dp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Parcial 1"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#6A1B9A" />
+                            </LinearLayout>
+
+                            <!-- Calificación -->
+                            <TextView
+                                android:id="@+id/tvCalifParcial1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="9.0"
+                                android:textSize="32sp"
+                                android:textStyle="bold"
+                                android:textColor="#8E24AA"
+                                android:layout_marginBottom="4dp" />
+
+                            <!-- Estado -->
+                            <TextView
+                                android:id="@+id/tvEstadoParcial1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="✓ Calificado"
+                                android:textSize="11sp"
+                                android:textColor="#66BB6A"
+                                android:background="@drawable/chip_success_bg"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="3dp" />
+
+                            <!-- Fecha (opcional) -->
+                            <TextView
+                                android:id="@+id/tvFechaParcial1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="15 Sept 2024"
+                                android:textSize="10sp"
+                                android:textColor="#9E9E9E"
+                                android:layout_marginTop="6dp"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Parcial 2 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="4dp"
+                        app:strokeWidth="2dp"
+                        app:strokeColor="#E1BEE7"
+                        app:cardBackgroundColor="@android:color/white">
+
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="16dp"
+                            android:gravity="center">
+
+                            <!-- Icono y título -->
+                            <LinearLayout
+                                android:orientation="horizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="📝"
+                                    android:textSize="20sp"
+                                    android:layout_marginEnd="6dp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Parcial 2"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#6A1B9A" />
+                            </LinearLayout>
+
+                            <!-- Calificación -->
+                            <TextView
+                                android:id="@+id/tvCalifParcial2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="9.5"
+                                android:textSize="32sp"
+                                android:textStyle="bold"
+                                android:textColor="#8E24AA"
+                                android:layout_marginBottom="4dp" />
+
+                            <!-- Estado -->
+                            <TextView
+                                android:id="@+id/tvEstadoParcial2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="✓ Calificado"
+                                android:textSize="11sp"
+                                android:textColor="#66BB6A"
+                                android:background="@drawable/chip_success_bg"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="3dp" />
+
+                            <!-- Fecha (opcional) -->
+                            <TextView
+                                android:id="@+id/tvFechaParcial2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="20 Nov 2024"
+                                android:textSize="10sp"
+                                android:textColor="#9E9E9E"
+                                android:layout_marginTop="6dp"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- Mensaje cuando no hay parciales calificados -->
+                <LinearLayout
+                    android:id="@+id/layoutNoParciales"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="24dp"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📋"
+                        android:textSize="40sp"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sin calificaciones de parciales"
+                        android:textSize="13sp"
+                        android:textColor="#9E9E9E"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Las calificaciones aparecerán aquí"
+                        android:textSize="11sp"
+                        android:textColor="#BDBDBD"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <!-- Divisor entre secciones -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:background="@drawable/section_divider" />
+            </LinearLayout>
+
+            <!-- ============================================ -->
+            <!-- SECCIÓN ORIGINAL: ACTIVIDADES -->
+            <!-- ============================================ -->
+
+            <!-- Header de actividades -->
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"

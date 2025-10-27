@@ -81,30 +81,72 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         recyclerViewHistorial.setHasFixedSize(false)
     }
 
-
-
     private fun cargarHistorial() {
-        // Mostrar loading
         showLoading(true)
 
         lifecycleScope.launch {
             try {
-                // Llamada suspend
-                val response = RetrofitClient.instance.getHistorialAlumnos(idClase)
+                // ⭐ PASO 1: Cargar actividades (endpoint viejo)
+                val responseActividades = RetrofitClient.instance.getHistorialAlumnos(idClase)
+                historialResponse = responseActividades
 
-                // Guardamos la respuesta
-                historialResponse = response
+                // ⭐ PASO 2: Cargar calificaciones de parciales (endpoint nuevo)
+                val calificacionesParciales = try {
+                    RetrofitClient.instance.obtenerCalificacionesClase(idClase)
+                } catch (e: Exception) {
+                    Log.w("HistorialAlumnos", "No se pudieron cargar calificaciones: ${e.message}")
+                    emptyList() // Si falla, continuar sin calificaciones
+                }
 
-                // Mostramos el historial en UI
+                // ⭐ PASO 3: Combinar datos
+                val alumnosConCalificaciones = combinarDatos(
+                    responseActividades.historial,
+                    calificacionesParciales
+                )
+
+                // ⭐ PASO 4: Actualizar la respuesta con datos combinados
+                historialResponse = HistorialResponse(
+                    total_actividades = responseActividades.total_actividades,
+                    total_ponderacion = responseActividades.total_ponderacion,
+                    historial = alumnosConCalificaciones
+                )
+
+                // Mostrar en UI
                 mostrarHistorial()
 
             } catch (e: Exception) {
                 Log.e("HistorialAlumnos", "Error al cargar historial", e)
                 mostrarError("Error al cargar el historial: ${e.message}")
             } finally {
-                // Ocultar loading al terminar
                 showLoading(false)
             }
+        }
+    }
+
+    // ⭐ NUEVA FUNCIÓN: Combinar actividades con calificaciones
+    private fun combinarDatos(
+        alumnos: List<AlumnoHistorialCompleto>,
+        calificaciones: List<CalificacionesEstudianteResponse>
+    ): List<AlumnoHistorialCompleto> {
+
+        // Crear mapa de calificaciones por id_estudiante para búsqueda rápida
+        val calificacionesMap = calificaciones.associateBy { it.id_estudiante }
+
+        // Combinar datos
+        return alumnos.map { alumno ->
+            val calif = calificacionesMap[alumno.id_estudiante]
+
+            // Crear nuevo objeto con calificaciones agregadas
+            alumno.copy(
+                parcial_1 = calif?.parcial_1,
+                parcial_2 = calif?.parcial_2,
+                ordinario = calif?.ordinario,
+                promedio_parciales = calif?.promedio_parciales,
+                estado_parcial_1 = calif?.estado_parcial_1 ?: "pendiente",
+                estado_parcial_2 = calif?.estado_parcial_2 ?: "pendiente",
+                fecha_parcial_1 = calif?.fecha_parcial_1,
+                fecha_parcial_2 = calif?.fecha_parcial_2
+            )
         }
     }
 
@@ -115,14 +157,11 @@ class HistorialAlumnosActivity : AppCompatActivity() {
             // No hay alumnos
             cardNoAlumnos.visibility = View.VISIBLE
             recyclerViewHistorial.visibility = View.GONE
-
-            // Actualizar estadísticas con valores por defecto
             actualizarEstadisticasVacias()
         } else {
             // Hay alumnos
             cardNoAlumnos.visibility = View.GONE
             recyclerViewHistorial.visibility = View.VISIBLE
-
 
             // Configurar adapter
             adapter = HistorialAlumnosAdapter(
@@ -147,7 +186,7 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         // Total de actividades
         tvActividadesTotales.text = historialResponse.total_actividades.toString()
 
-        // ✅ VERSIÓN VIEJA: Escala 0-100 con enteros
+        // Promedio general (escala 0-100)
         val promedioGeneral = if (alumnos.isNotEmpty()) {
             val sumaPuntosObtenidos = alumnos.sumOf { it.puntosObtenidos }
             val sumaPuntosTotales = alumnos.sumOf { it.puntosTotales }
@@ -158,7 +197,7 @@ class HistorialAlumnosActivity : AppCompatActivity() {
 
         tvPromedioGeneral.text = promedioGeneral.toString()
 
-        // ✅ Tasa de entrega (versión vieja)
+        // Tasa de entrega
         val totalEntregas = alumnos.sumOf { it.actividadesEntregadas }
         val totalPosibles = alumnos.sumOf { it.totalActividades }
         val tasaEntrega = if (totalPosibles > 0) {
@@ -178,7 +217,6 @@ class HistorialAlumnosActivity : AppCompatActivity() {
     private fun verDetallesAlumno(alumno: AlumnoHistorialCompleto) {
         Log.d("TRACE", "HistorialAlumnosActivity -> DetalleAlumnoActivity | idClase = $idClase, alumnoId = ${alumno.id_estudiante}")
 
-        // Intent para ver detalles específicos del alumno
         val intent = Intent(this, DetalleAlumnoActivity::class.java).apply {
             putExtra("ALUMNO_ID", alumno.id_estudiante)
             putExtra("ALUMNO_NOMBRE", "${alumno.nombre} ${alumno.apellido}")
@@ -189,27 +227,18 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-
     private fun showLoading(isLoading: Boolean) {
         if (isLoading) {
             recyclerViewHistorial.visibility = View.GONE
             cardNoAlumnos.visibility = View.GONE
-
-
-            // Mensaje temporal
             Toast.makeText(this, "Cargando historial...", Toast.LENGTH_SHORT).show()
         }
-        // El contenido se mostrará en mostrarHistorial()
     }
 
     private fun mostrarError(mensaje: String) {
         Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show()
-
-        // Mostrar estado de error
         cardNoAlumnos.visibility = View.VISIBLE
         recyclerViewHistorial.visibility = View.GONE
-
-
         actualizarEstadisticasVacias()
     }
 
@@ -218,3 +247,35 @@ class HistorialAlumnosActivity : AppCompatActivity() {
         finish()
     }
 }
+
+// ⭐ AGREGAR: Función de extensión para copy() con valores por defecto
+private fun AlumnoHistorialCompleto.copy(
+    parcial_1: Int? = this.parcial_1,
+    parcial_2: Int? = this.parcial_2,
+    ordinario: Double? = this.ordinario,
+    promedio_parciales: Double? = this.promedio_parciales,
+    estado_parcial_1: String = this.estado_parcial_1,
+    estado_parcial_2: String = this.estado_parcial_2,
+    fecha_parcial_1: String? = this.fecha_parcial_1,
+    fecha_parcial_2: String? = this.fecha_parcial_2
+) = AlumnoHistorialCompleto(
+    id_estudiante = this.id_estudiante,
+    nombre = this.nombre,
+    apellido = this.apellido,
+    matricula = this.matricula,
+    no_lista = this.no_lista,
+    correo = this.correo,
+    estado_actual = this.estado_actual,
+    grupo = this.grupo,
+    actividades = this.actividades,
+    entregado = this.entregado,
+    ponderacion = this.ponderacion,
+    parcial_1 = parcial_1,
+    parcial_2 = parcial_2,
+    ordinario = ordinario,
+    promedio_parciales = promedio_parciales,
+    estado_parcial_1 = estado_parcial_1,
+    estado_parcial_2 = estado_parcial_2,
+    fecha_parcial_1 = fecha_parcial_1,
+    fecha_parcial_2 = fecha_parcial_2
+)

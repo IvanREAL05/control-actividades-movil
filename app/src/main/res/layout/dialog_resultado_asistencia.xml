@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/dialog_background">
+
+    <!-- Header con gradiente -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/dialog_header_gradient"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📊"
+            android:textSize="36sp"
+            android:layout_gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reporte de Asistencias"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/tvNombreAlumnoDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sofía Martínez"
+            android:textSize="16sp"
+            android:textColor="#E0E0E0"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+    <!-- ScrollView para contenido largo -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="500dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Información de la clase -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#F5F5F5">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📚 Información de la Clase"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#666666"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvNombreClaseDialog"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Matemáticas II"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Rango de fechas -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#E3F2FD">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📅 Período Consultado"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#1976D2"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvFechaInicio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="04/08/2025"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="#1976D2" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="  →  "
+                            android:textSize="15sp"
+                            android:textColor="#1976D2" />
+
+                        <TextView
+                            android:id="@+id/tvFechaFin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="13/10/2025"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="#1976D2" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Resultados -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📊 Resultados"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#212121"
+                android:layout_marginBottom="12dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <!-- Asistencias -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="#E8F5E9"
+                    android:padding="16dp"
+                    android:layout_marginEnd="4dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#4CAF50">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:text="✓"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="@android:color/white"
+                            android:gravity="center" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:id="@+id/tvAsistencias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="15"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="#4CAF50"
+                        android:layout_marginTop="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Asistencias"
+                        android:textSize="11sp"
+                        android:textColor="#4CAF50"
+                        android:textStyle="bold"
+                        android:textAllCaps="true" />
+
+                </LinearLayout>
+
+                <!-- Faltas -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="#FFEBEE"
+                    android:padding="16dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#F44336">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:text="✗"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="@android:color/white"
+                            android:gravity="center" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:id="@+id/tvFaltas"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="#F44336"
+                        android:layout_marginTop="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Faltas"
+                        android:textSize="11sp"
+                        android:textColor="#F44336"
+                        android:textStyle="bold"
+                        android:textAllCaps="true" />
+
+                </LinearLayout>
+
+                <!-- Justificantes -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="#FFF3E0"
+                    android:padding="16dp"
+                    android:layout_marginStart="4dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#FF9800">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:text="📝"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/white"
+                            android:gravity="center" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:id="@+id/tvJustificantes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF9800"
+                        android:layout_marginTop="8dp" />
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Justific."
+                        android:textSize="11sp"
+                        android:textColor="#FF9800"
+                        android:textStyle="bold"
+                        android:textAllCaps="true" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Porcentaje de asistencia -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#9B59B6">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Porcentaje de Asistencia"
+                        android:textSize="13sp"
+                        android:textColor="#E0E0E0"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvPorcentajeAsistencia"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="83.3%"
+                        android:textSize="36sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Nota informativa -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#FFF9C4">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="12dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💡"
+                        android:textSize="20sp"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Los datos mostrados corresponden únicamente a la clase seleccionada en el período especificado"
+                        android:textSize="11sp"
+                        android:textColor="#666666" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- Botones de acción -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="end"
+        android:background="@android:color/white">
+
+        <Button
+            android:id="@+id/btnCerrarDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CERRAR"
+            android:textColor="#666666"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="24dp"
+            style="?attr/materialButtonOutlinedStyle" />
+
+        <Button
+            android:id="@+id/btnNuevaConsulta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NUEVA CONSULTA"
+            android:textColor="#9B59B6"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="24dp"
+            android:layout_marginStart="8dp"
+            style="?attr/materialButtonOutlinedStyle" />
+
+    </LinearLayout>
+
+</LinearLayout>

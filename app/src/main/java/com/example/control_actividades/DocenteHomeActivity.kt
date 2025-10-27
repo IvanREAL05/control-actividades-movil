@@ -55,6 +55,7 @@ class DocenteHomeActivity : AppCompatActivity() {
         // Configurar Toolbar
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         // Inicializar vistas
         tvInfoClase = findViewById(R.id.tvInfoClase)
@@ -102,15 +103,6 @@ class DocenteHomeActivity : AppCompatActivity() {
                 val intent = Intent(this, ScanLoginDashboardActivity::class.java)
                 intent.putExtra("id_profesor", idProfesor) // ✅ Enviar explícitamente
                 startActivity(intent)
-                true
-            }
-            R.id.action_horario -> {
-                val intent = Intent(this, HorarioDocenteActivity::class.java)
-                startActivity(intent)
-                true
-            }
-            R.id.action_perfil -> {
-                mostrarPerfilDocente()
                 true
             }
             R.id.action_cerrar_sesion -> {

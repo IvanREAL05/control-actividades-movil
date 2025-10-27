@@ -180,12 +180,13 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
-            <!-- Card Botón de Descarga -->
-            <androidx.cardview.widget.CardView
+
+            <!-- Card Botón de Descarga Excel -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 app:cardBackgroundColor="@android:color/white">
 
@@ -213,14 +214,85 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Genera un archivo Excel con toda la información de asistencia de todas los grupos del docente. Ver archivo completo en carpeta de descargas."
+                        android:text="Genera un archivo Excel con toda la información de asistencia de todos los grupos del docente"
                         android:textSize="12sp"
                         android:textColor="#7F8C8D"
                         android:textAlignment="center"
                         android:layout_marginTop="8dp" />
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- NUEVO: Card Asistencias por Alumno -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="👤"
+                            android:textSize="24sp"
+                            android:layout_marginEnd="12dp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Asistencias Individuales"
+                                android:textStyle="bold"
+                                android:textSize="16sp"
+                                android:textColor="#212121" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Consulta el historial de asistencias por alumno"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnVerAsistenciasPorAlumno"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#9B59B6"
+                        android:elevation="2dp"
+                        android:padding="14dp"
+                        android:stateListAnimator="@null"
+                        android:text="📅 Ver Asistencias por Alumno"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Estado de entregas -->
             <com.google.android.material.card.MaterialCardView
