@@ -15,7 +15,7 @@
     </domain-config>
 
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">10.31.224.128</domain>
+        <domain includeSubdomains="true">10.31.231.252</domain>
         <trust-anchors>
             <certificates src="system"/>
         </trust-anchors>

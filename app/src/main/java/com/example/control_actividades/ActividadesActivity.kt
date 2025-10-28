@@ -39,9 +39,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileOutputStream
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.GlobalScope
 import com.example.control_actividades.database.AppDatabase
 import com.example.control_actividades.repository.OfflineRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 
 class ActividadesActivity : AppCompatActivity() {
@@ -60,6 +62,8 @@ class ActividadesActivity : AppCompatActivity() {
     private lateinit var adapter: ActividadAdapter
     private lateinit var offlineRepository: OfflineRepository
     private lateinit var db: AppDatabase
+    private var esperandoMostrarDialogo = false
+    private var datosDialogoPendiente: Pair<Actividad, String>? = null
 
     private var idClase: Int = -1
 
@@ -73,6 +77,8 @@ class ActividadesActivity : AppCompatActivity() {
     private lateinit var requestStoragePermission: ActivityResultLauncher<String>
     private var escaneando: Boolean = false
     private var actividadParaEscanear: Actividad? = null
+    private val scanScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
     // =====================================================
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -201,51 +207,62 @@ class ActividadesActivity : AppCompatActivity() {
             Log.d("QR_ACTIVIDAD", "Escaneo cancelado por usuario")
             showToast("Escaneo cancelado")
             escaneando = false
+            limpiarDatosEscaneo() // ✅ Solo limpiar cuando cancela
+            return
+        }
 
-            // ✅ Limpiar SOLO cuando el usuario cancela
+        // ✅ QR escaneado exitosamente
+        escaneando = false
+        val qr = result.contents
+        Log.d("QR_ACTIVIDAD", "✅ QR escaneado: $qr")
+
+        // ✅ NO LIMPIAR AQUÍ - Mantener la actividad para escaneos múltiples
+        val actividad = recuperarActividadDeEscaneo()
+
+        if (actividad == null) {
+            Log.e("QR_ACTIVIDAD", "ERROR: No se pudo recuperar actividad")
+            showToast("⚠️ Error al recuperar actividad")
             limpiarDatosEscaneo()
             return
         }
 
-        // ✅ Si llegamos aquí, ES un escaneo válido
-        escaneando = false
+        Log.d("QR_ACTIVIDAD", "✅ Procesando entrega para: ${actividad.titulo}")
 
-        val qr = result.contents
-        Log.d("QR_ACTIVIDAD", "✅ QR escaneado: $qr")
+        // ✅ Procesar entrega SIN limpiar datos
+        validarEntregaActividad(qr, actividad.id_actividad, actividad)
+    }
 
-        // Recuperar actividad (NO limpiar aquí todavía)
-        val actividad = actividadParaEscanear ?: run {
-            Log.w("QR_ACTIVIDAD", "actividadParaEscanear es null, recuperando de SharedPreferences")
-            val prefs = getSharedPreferences("escaneo_temp", Context.MODE_PRIVATE)
-            val idActividad = prefs.getInt("id_actividad", -1)
+    private fun recuperarActividadDeEscaneo(): Actividad? {
+        // Primero intentar con la variable en memoria
+        actividadParaEscanear?.let { return it }
 
-            if (idActividad == -1) {
-                Log.e("QR_ACTIVIDAD", "ERROR: No se encontró id_actividad en SharedPreferences")
-                showToast("⚠️ No se pudo recuperar la actividad")
-                limpiarDatosEscaneo()
-                return
-            }
+        // Si no existe, recuperar de SharedPreferences
+        val prefs = getSharedPreferences("escaneo_temp", Context.MODE_PRIVATE)
+        val idActividad = prefs.getInt("id_actividad", -1)
 
-            Actividad(
-                id_actividad = idActividad,
-                id_clase = prefs.getInt("id_clase", idClase),
-                titulo = prefs.getString("titulo_actividad", "") ?: "",
-                descripcion = prefs.getString("descripcion_actividad", ""),
-                fecha_entrega = prefs.getString("fecha_entrega", "") ?: "",
-                hora_entrega = prefs.getString("hora_entrega", ""),
-                fecha_creacion = prefs.getString("fecha_creacion", "") ?: "",
-                estado = prefs.getString("estado", ""),
-                fecha_entrega_real = prefs.getString("fecha_entrega_real", ""),
-                vigencia = prefs.getString("vigencia", ""),
-                valor_maximo = prefs.getInt("valor_maximo", 0),
-                tipo_actividad = prefs.getString("tipo_actividad", "") ?: ""
-            )
+        if (idActividad == -1) {
+            Log.e("QR_ACTIVIDAD", "No se encontró id_actividad en SharedPreferences")
+            return null
         }
 
-        Log.d("QR_ACTIVIDAD", "✅ Actividad recuperada: id=${actividad.id_actividad}, titulo='${actividad.titulo}'")
+        val actividad = Actividad(
+            id_actividad = idActividad,
+            id_clase = prefs.getInt("id_clase", idClase),
+            titulo = prefs.getString("titulo_actividad", "") ?: "",
+            descripcion = prefs.getString("descripcion_actividad", ""),
+            fecha_entrega = prefs.getString("fecha_entrega", "") ?: "",
+            hora_entrega = prefs.getString("hora_entrega", ""),
+            fecha_creacion = prefs.getString("fecha_creacion", "") ?: "",
+            estado = prefs.getString("estado", ""),
+            fecha_entrega_real = prefs.getString("fecha_entrega_real", ""),
+            vigencia = prefs.getString("vigencia", ""),
+            valor_maximo = prefs.getInt("valor_maximo", 0),
+            tipo_actividad = prefs.getString("tipo_actividad", "") ?: ""
+        )
 
-        // Registrar entrega (NO limpiar aquí)
-        validarEntregaActividad(qr, actividad.id_actividad, actividad)
+        // Restaurar en memoria para próximos escaneos
+        actividadParaEscanear = actividad
+        return actividad
     }
 
     private fun cargarYMostrarActividades() {
@@ -280,6 +297,28 @@ class ActividadesActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        Log.d("QR_CONTINUAR", "========================================")
+        Log.d("QR_CONTINUAR", "onResume() llamado")
+        Log.d("QR_CONTINUAR", "esperandoMostrarDialogo: $esperandoMostrarDialogo")
+        Log.d("QR_CONTINUAR", "datosDialogoPendiente: ${datosDialogoPendiente != null}")
+        Log.d("QR_CONTINUAR", "isFinishing: $isFinishing, isDestroyed: $isDestroyed")
+        Log.d("QR_CONTINUAR", "========================================")
+
+        // ✅ Si hay un diálogo pendiente Y llegamos a onResume, mostrarlo
+        if (esperandoMostrarDialogo && datosDialogoPendiente != null) {
+            val (actividad, nombreAlumno) = datosDialogoPendiente!!
+            Log.d("QR_CONTINUAR", "📍 Mostrando diálogo pendiente en onResume")
+
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                if (esperandoMostrarDialogo) { // Verificar que no se haya mostrado ya
+                    mostrarDialogoContinuar(actividad, nombreAlumno)
+                    esperandoMostrarDialogo = false
+                    datosDialogoPendiente = null
+                }
+            }, 200)
+        }
+
         if (modoActual != Modo.NONE) {
             cargarYMostrarActividades()
         }
@@ -347,86 +386,114 @@ class ActividadesActivity : AppCompatActivity() {
     }
 
     // ===================== ESCANEO PARA ACTIVIDADES =====================
-
     private fun validarEntregaActividad(qr: String, idActividad: Int, actividad: Actividad) {
-        Log.d("QR_VALIDAR", "Llamando a validarEntregaActividad()")
-        Log.d("QR_VALIDAR", "QR: $qr")
-        Log.d("QR_VALIDAR", "idActividad: $idActividad")
-        Log.d("QR_VALIDAR", "Actividad: ${actividad.titulo} (id=${actividad.id_actividad})")
+        Log.d("QR_VALIDAR", "Validando entrega para: ${actividad.titulo}")
 
         val request = EntregaRequest(qr, idActividad)
 
-        // ⚠️ Usar GlobalScope para que NO se cancele con el lifecycle
-        GlobalScope.launch(Dispatchers.Main) {
+        scanScope.launch {
             try {
-                Log.d("QR_VALIDAR", "🌐 Iniciando petición HTTP...")
+                Log.d("QR_VALIDAR", "🌐 Enviando petición de validación...")
                 val body = RetrofitClient.instance.validarEntrega(request)
-                Log.d("QR_VALIDAR", "✅ Respuesta recibida: $body")
+                Log.d("QR_VALIDAR", "✅ Respuesta recibida: ${body.mensaje}")
+
+                // ✅ MOSTRAR NOMBRE DEL ALUMNO ANTES DE CONTINUAR
+                withContext(Dispatchers.Main) {
+                    showToast("📝 Validando: ${body.nombre}")
+                }
 
                 when {
                     actividad.tipo_actividad.equals("examen", ignoreCase = true) -> {
-                        Log.d("QR_VALIDAR", "📝 Examen detectado")
+                        Log.d("QR_VALIDAR", "📝 Examen detectado - requiere calificación manual")
                         abrirDialogCalificacionManual(qr, actividad, body)
                     }
                     body.tarde -> {
-                        Log.d("QR_VALIDAR", "⏰ Entrega tardía detectada")
+                        Log.d("QR_VALIDAR", "⏰ Entrega tardía - requiere calificación manual")
                         abrirDialogCalificacionManual(qr, actividad, body)
                     }
                     body.success -> {
                         val calificacion = body.calificacion ?: actividad.valor_maximo
-                        Log.d("QR_VALIDAR", "✅ Entrega a tiempo, calificación: $calificacion")
-                        registrarEntregaActividadConCalificacion(qr, actividad.id_actividad, actividad, calificacion)
+                        Log.d("QR_VALIDAR", "✅ Entrega válida con calificación: $calificacion")
+                        registrarEntregaActividadConCalificacion(qr, actividad.id_actividad, actividad, calificacion, body.nombre!!)
                     }
                     else -> {
-                        Log.w("QR_VALIDAR", "⚠️ Respuesta no exitosa: ${body.mensaje}")
-                        showToast(body.mensaje)
+                        Log.w("QR_VALIDAR", "⚠️ Validación no exitosa: ${body.mensaje}")
+                        withContext(Dispatchers.Main) {
+                            mostrarErrorYPreguntar(body.mensaje, actividad)
+                        }
                     }
                 }
 
             } catch (e: Exception) {
                 Log.e("QR_VALIDAR", "❌ Error en validación: ${e.message}", e)
-                showToast("Error: ${e.message}")
+                reproducirSonidoError()
+                vibrarCelular()
+
+                withContext(Dispatchers.Main) {
+                    mostrarErrorYPreguntar(e.message ?: "Error desconocido", actividad)
+                }
             }
         }
     }
 
+    private fun mostrarErrorYPreguntar(mensaje: String, actividad: Actividad) {
+        if (isFinishing || isDestroyed) return
+
+        AlertDialog.Builder(this)
+            .setTitle("⚠️ Error de validación")
+            .setMessage("$mensaje\n\n¿Deseas seguir escaneando?")
+            .setPositiveButton("✅ Sí, continuar") { d, _ ->
+                d.dismiss()
+                iniciarEscaneo()
+            }
+            .setNegativeButton("🛑 Cancelar") { d, _ ->
+                d.dismiss()
+                limpiarDatosEscaneo()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
 
     private fun abrirDialogCalificacionManual(qr: String, actividad: Actividad, response: ValidarEntregaResponse) {
-        Log.d("QR_MANUAL", "abrirDialogCalificacionManual() para: ${response.nombre}")
-        val input = EditText(this)
-        input.inputType = InputType.TYPE_CLASS_NUMBER
-        input.hint = "Calificación (0 - 10)"
+        Log.d("QR_MANUAL", "Solicitando calificación manual para: ${response.nombre}")
 
-        // Determinar el título según el tipo
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "Calificación (0 - ${actividad.valor_maximo})"
+        }
+
         val titulo = if (actividad.tipo_actividad.equals("examen", ignoreCase = true)) {
-            "Examen: ${response.nombre}"
+            "📝 Examen: ${response.nombre}"
         } else {
-            "Entrega tardía: ${response.nombre}"
+            "⏰ Entrega tardía: ${response.nombre}"
         }
 
         val mensaje = if (actividad.tipo_actividad.equals("examen", ignoreCase = true)) {
-            "Ingresa calificación para el examen"
+            "Ingresa calificación del examen"
         } else {
-            "Ingresa calificación manual"
+            "Entrega fuera de tiempo. Ingresa calificación manual."
         }
 
         AlertDialog.Builder(this)
             .setTitle(titulo)
             .setMessage(mensaje)
             .setView(input)
-            .setPositiveButton("Registrar") { _, _ ->
+            .setPositiveButton("✅ Registrar") { _, _ ->
                 val calificacion = input.text.toString().toIntOrNull()
-                Log.d("QR_MANUAL", "Calificación ingresada: $calificacion")
-                if (calificacion == null || calificacion !in 0..10) {
-                    Log.e("QR_MANUAL", "Calificación inválida ingresada")
-                    showToast("Calificación inválida")
+
+                if (calificacion == null || calificacion !in 0..actividad.valor_maximo) {
+                    showToast("❌ Calificación inválida (0-${actividad.valor_maximo})")
+                    abrirDialogCalificacionManual(qr, actividad, response)
                 } else {
-                    registrarEntregaActividadConCalificacion(qr, actividad.id_actividad, actividad, calificacion)
+                    registrarEntregaActividadConCalificacion(qr, actividad.id_actividad, actividad, calificacion, response.nombre!!)
                 }
             }
-            .setNegativeButton("Cancelar") { _, _ ->
-                Log.d("QR_MANUAL", "Usuario canceló el registro manual")
+            .setNegativeButton("🛑 Cancelar") { _, _ ->
+                showToast("⚠️ Registro cancelado")
+                preguntarSeguirEscaneando(actividad, response.nombre!!)
             }
+            .setCancelable(false)
             .show()
     }
 
@@ -434,58 +501,86 @@ class ActividadesActivity : AppCompatActivity() {
         qr: String,
         idActividad: Int,
         actividad: Actividad,
-        calificacion: Int?
+        calificacion: Int?,
+        nombreAlumno: String = "" // ✅ Nuevo parámetro
     ) {
-        Log.d("QR_REGISTRAR", "registrarEntregaActividadConCalificacion()")
-        Log.d("QR_REGISTRAR", "QR: $qr")
-        Log.d("QR_REGISTRAR", "idActividad: $idActividad")
-        Log.d("QR_REGISTRAR", "Actividad: ${actividad.titulo} (id=${actividad.id_actividad})")
-        Log.d("QR_REGISTRAR", "Calificación a enviar: $calificacion")
+        Log.d("QR_REGISTRAR", "========================================")
+        Log.d("QR_REGISTRAR", "INICIO: registrarEntregaActividadConCalificacion()")
+        Log.d("QR_REGISTRAR", "Alumno: $nombreAlumno")
+        Log.d("QR_REGISTRAR", "Actividad: ${actividad.titulo}")
+        Log.d("QR_REGISTRAR", "Calificación: $calificacion")
+        Log.d("QR_REGISTRAR", "========================================")
 
-        lifecycleScope.launch {
+        scanScope.launch {
             try {
-                Log.d("QR_REGISTRAR", "🌐 Enviando entrega de actividad...")
+                Log.d("QR_REGISTRAR", "🌐 Guardando entrega...")
 
-                // ✅ Usar el repositorio offline
-                offlineRepository.guardarEntregaActividad(qr, idActividad, calificacion)
-
-                // Verificar si se guardó offline o se envió
-                val hayConexion = tieneConexionInternet()
-
-                if (hayConexion) {
-                    Log.d("QR_REGISTRAR", "✅ Entrega registrada exitosamente")
-                    showToast("✅ Entrega registrada exitosamente")
-                } else {
-                    Log.d("QR_REGISTRAR", "💾 Guardado localmente (sin internet)")
-                    showToast("💾 Se guardó localmente. Se sincronizará cuando haya internet.")
+                withContext(Dispatchers.IO) {
+                    offlineRepository.guardarEntregaActividad(qr, idActividad, calificacion)
                 }
 
-                reproducirSonidoEscaneo()
+                Log.d("QR_REGISTRAR", "✅ Registro guardado exitosamente")
 
-                // Actualizar contador
-                mostrarContadorPendientes()
+                val hayConexion = tieneConexionInternet()
 
-                preguntarSeguirEscaneando(actividad)
+                withContext(Dispatchers.Main) {
+                    if (hayConexion) {
+                        showToast("✅ $nombreAlumno - Entrega registrada")
+                    } else {
+                        showToast("💾 $nombreAlumno - Guardado localmente")
+                    }
+
+                    reproducirSonidoEscaneo()
+                    mostrarContadorPendientes()
+
+                    // ✅ CRUCIAL: Preguntar si seguir escaneando CON NOMBRE
+                    preguntarSeguirEscaneando(actividad, nombreAlumno)
+                }
 
             } catch (e: Exception) {
-                Log.e("QR_REGISTRAR", "❌ Error al procesar entrega", e)
+                Log.e("QR_REGISTRAR", "❌ ERROR: ${e.message}", e)
                 reproducirSonidoError()
                 vibrarCelular()
 
-                if (!isFinishing && !isDestroyed) {
-                    AlertDialog.Builder(this@ActividadesActivity)
-                        .setTitle("Error")
-                        .setMessage("❌ Error al procesar: ${e.message}")
-                        .setPositiveButton("Seguir escaneando") { d, _ ->
-                            d.dismiss()
-                            iniciarEscaneo()
-                        }
-                        .setNegativeButton("Cerrar", null)
-                        .show()
+                withContext(Dispatchers.Main) {
+                    mostrarErrorRegistroYOpciones(e.message ?: "Error desconocido", qr, idActividad, actividad, calificacion, nombreAlumno)
                 }
             }
         }
     }
+
+
+    private fun mostrarErrorRegistroYOpciones(
+        mensaje: String,
+        qr: String,
+        idActividad: Int,
+        actividad: Actividad,
+        calificacion: Int?,
+        nombreAlumno: String
+    ) {
+        if (isFinishing || isDestroyed) return
+
+        AlertDialog.Builder(this)
+            .setTitle("❌ Error al registrar")
+            .setMessage("$mensaje\n\n¿Qué deseas hacer?")
+            .setPositiveButton("🔄 Reintentar") { d, _ ->
+                d.dismiss()
+                registrarEntregaActividadConCalificacion(qr, idActividad, actividad, calificacion, nombreAlumno)
+            }
+            .setNeutralButton("➡️ Continuar escaneando") { d, _ ->
+                d.dismiss()
+                iniciarEscaneo()
+            }
+            .setNegativeButton("🛑 Cancelar") { d, _ ->
+                d.dismiss()
+                limpiarDatosEscaneo()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+
+
 
     private fun escanearQR(actividad: Actividad) {
         Log.d("QR_ACTIVIDAD", "=== INICIANDO ESCANEO ===")
@@ -536,36 +631,118 @@ class ActividadesActivity : AppCompatActivity() {
     }
 
     private fun iniciarEscaneo() {
-        if (escaneando) return
-        escaneando = true
+        Log.d("QR_ESCANEO", "========================================")
+        Log.d("QR_ESCANEO", "INICIO: iniciarEscaneo()")
+        Log.d("QR_ESCANEO", "Estado actual escaneando: $escaneando")
+        Log.d("QR_ESCANEO", "========================================")
 
+        if (escaneando) {
+            Log.w("QR_ESCANEO", "⚠️ Ya hay un escaneo en curso, ignorando...")
+            return
+        }
+
+        escaneando = true
+        Log.d("QR_ESCANEO", "✅ Marcado como escaneando=true")
+
+        val tituloActividad = actividadParaEscanear?.titulo ?: "actividad"
+        Log.d("QR_ESCANEO", "📄 Actividad a escanear: $tituloActividad")
+
+        Log.d("QR_ESCANEO", "📸 Configurando IntentIntegrator...")
         val integrator = IntentIntegrator(this)
-        integrator.setPrompt("Escanea el QR del alumno para '${actividadParaEscanear?.titulo ?: "actividad"}'")
+        integrator.setPrompt("Escanea el QR del alumno para '$tituloActividad'")
         integrator.setBeepEnabled(false)
         integrator.setOrientationLocked(true)
         integrator.setCaptureActivity(com.journeyapps.barcodescanner.CaptureActivity::class.java)
+
+        Log.d("QR_ESCANEO", "🚀 Iniciando escaneo...")
         integrator.initiateScan()
+
+        Log.d("QR_ESCANEO", "✅ Escaneo iniciado correctamente")
     }
 
 
-    private fun preguntarSeguirEscaneando(actividad: Actividad) {
-        AlertDialog.Builder(this)
-            .setTitle("¿Seguir escaneando?")
-            .setMessage("Actividad: ${actividad.titulo}\nPuedes registrar otro alumno o finalizar.")
-            .setPositiveButton("Sí, otro QR") { d, _ ->
-                d.dismiss()
-                Log.d("QR_ACTIVIDAD", "Usuario eligió seguir escaneando")
-                // ✅ Mantener actividadParaEscanear y SharedPreferences
-                iniciarEscaneo()
+    private fun preguntarSeguirEscaneando(actividad: Actividad, nombreAlumno: String = "") {
+        Log.d("QR_CONTINUAR", "========================================")
+        Log.d("QR_CONTINUAR", "preguntarSeguirEscaneando()")
+        Log.d("QR_CONTINUAR", "Alumno: $nombreAlumno")
+        Log.d("QR_CONTINUAR", "Actividad: ${actividad.titulo}")
+        Log.d("QR_CONTINUAR", "isFinishing: $isFinishing, isDestroyed: $isDestroyed")
+        Log.d("QR_CONTINUAR", "========================================")
+
+        // ✅ SOLUCIÓN: Guardar datos y programar mostrar
+        esperandoMostrarDialogo = true
+        datosDialogoPendiente = Pair(actividad, nombreAlumno)
+        Log.d("QR_CONTINUAR", "⏳ Programando mostrar diálogo...")
+
+        // Usar postDelayed para mostrar cuando la Activity esté estable
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            if (esperandoMostrarDialogo && datosDialogoPendiente != null) {
+                val (act, nombre) = datosDialogoPendiente!!
+                Log.d("QR_CONTINUAR", "📍 Intentando mostrar diálogo ahora...")
+                Log.d("QR_CONTINUAR", "   isFinishing: $isFinishing, isDestroyed: $isDestroyed")
+                mostrarDialogoContinuar(act, nombre)
+                esperandoMostrarDialogo = false
+                datosDialogoPendiente = null
             }
-            .setNegativeButton("No") { d, _ ->
-                d.dismiss()
-                Log.d("QR_ACTIVIDAD", "Usuario eligió finalizar escaneo")
-                // ✅ Limpiar SOLO cuando el usuario finaliza
-                limpiarDatosEscaneo()
+        }, 300) // 300ms para que todo se estabilice
+    }
+
+    private fun mostrarDialogoContinuar(actividad: Actividad, nombreAlumno: String) {
+        Log.d("QR_CONTINUAR", "========================================")
+        Log.d("QR_CONTINUAR", "mostrarDialogoContinuar()")
+        Log.d("QR_CONTINUAR", "isFinishing: $isFinishing, isDestroyed: $isDestroyed")
+        Log.d("QR_CONTINUAR", "========================================")
+
+        // ✅ Solo verificar isFinishing, NO isDestroyed
+        if (isFinishing) {
+            Log.e("QR_CONTINUAR", "❌ Activity finalizando, no mostrar diálogo")
+            return
+        }
+
+        try {
+            // ✅ Crear mensaje con nombre en negritas
+            val mensaje = if (nombreAlumno.isNotBlank()) {
+                val textoCompleto = "✅ $nombreAlumno\nActividad: ${actividad.titulo}\n\n¿Deseas escanear otro alumno?"
+                val spannable = android.text.SpannableString(textoCompleto)
+
+                // Aplicar negrita al nombre (desde "✅ " hasta el salto de línea)
+                val inicio = 2 // Después del emoji "✅ "
+                val fin = inicio + nombreAlumno.length
+                spannable.setSpan(
+                    android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                    inicio,
+                    fin,
+                    android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                spannable
+            } else {
+                "Actividad: ${actividad.titulo}\n\n¿Deseas escanear otro alumno?"
             }
-            .setCancelable(false)
-            .show()
+
+            AlertDialog.Builder(this)
+                .setTitle("✅ Registro Exitoso")
+                .setMessage(mensaje)
+                .setPositiveButton("✅ Sí, continuar") { d, _ ->
+                    Log.d("QR_CONTINUAR", "✅ Usuario eligió continuar")
+                    d.dismiss()
+                    iniciarEscaneo()
+                }
+                .setNegativeButton("🛑 Finalizar") { d, _ ->
+                    Log.d("QR_CONTINUAR", "🛑 Usuario eligió finalizar")
+                    d.dismiss()
+                    limpiarDatosEscaneo()
+                    showToast("✅ Registro de entregas finalizado")
+                }
+                .setCancelable(false)
+                .show()
+
+            Log.d("QR_CONTINUAR", "✅ Diálogo mostrado correctamente")
+
+        } catch (e: Exception) {
+            Log.e("QR_CONTINUAR", "❌ ERROR al mostrar diálogo: ${e.message}", e)
+            e.printStackTrace()
+            showToast("Error al mostrar diálogo: ${e.message}")
+        }
     }
 
     // ===================== Utilidades UI/sonido =====================
@@ -976,9 +1153,21 @@ class ActividadesActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+
+        // Cancelar trabajos existentes
         validacionJob?.cancel()
+
+        // ✅ IMPORTANTE: Cancelar el scanScope cuando la Activity se destruye DEFINITIVAMENTE
+        if (isFinishing) {
+            Log.d("QR_ACTIVIDAD", "Activity finalizando definitivamente, cancelando scanScope")
+            scanScope.cancel() // Esto cancela todo el scope y todas sus corrutinas
+        } else {
+            Log.d("QR_ACTIVIDAD", "Activity destruida temporalmente, manteniendo scanScope")
+        }
+
         Log.d("QR_ACTIVIDAD", "Activity destruida, jobs cancelados")
     }
+
 
     // Verificar conexión a internet
     private fun tieneConexionInternet(): Boolean {
@@ -990,20 +1179,24 @@ class ActividadesActivity : AppCompatActivity() {
 
     // Mostrar contador de registros pendientes
     private fun mostrarContadorPendientes() {
+        Log.d("QR_CONTADOR", "Iniciando conteo de pendientes...")
+
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val pendientes = offlineRepository.contarPendientes()
+                Log.d("QR_CONTADOR", "Pendientes encontrados: $pendientes")
 
                 withContext(Dispatchers.Main) {
                     if (pendientes > 0) {
                         supportActionBar?.subtitle = "📤 $pendientes pendiente(s)"
-                        Log.d("OFFLINE", "Hay $pendientes registros pendientes de sincronizar")
+                        Log.d("QR_CONTADOR", "Subtitle actualizado: $pendientes pendientes")
                     } else {
                         supportActionBar?.subtitle = null
+                        Log.d("QR_CONTADOR", "No hay pendientes, subtitle limpiado")
                     }
                 }
             } catch (e: Exception) {
-                Log.e("OFFLINE", "Error al contar pendientes: ${e.message}")
+                Log.e("QR_CONTADOR", "Error al contar pendientes: ${e.message}")
             }
         }
     }

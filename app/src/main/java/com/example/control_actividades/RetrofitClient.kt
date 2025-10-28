@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.100.11:8000/"
+    private const val BASE_URL = "https://control-actividades.onrender.com/"
     private const val TIMEOUT_SECONDS = 30L
     fun getBaseUrl(): String = BASE_URL
 

@@ -208,7 +208,8 @@ class MainActivity : AppCompatActivity() {
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Acerca de la App")
             .setMessage(
-                "Nombre de la App: Control de Actividades v1.0\n" +
+                "Nombre de la App: Control de Asistencias\n" +
+                        "Versión: 1.0\n" +
                         "Director: Mtro.Ernesto Sandoval Munive\n" +
                         "Coordinador: Mtro. Javier Díaz Sánchez\n" +
                         "Analista y Programador: Iván Reyes Álvarez\n" +
